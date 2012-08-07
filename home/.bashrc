@@ -149,6 +149,8 @@ if [[ "$-" =~ 'i' ]]; then
 	#	export XMMS_PATH='tcp://192.168.1.2:6800'
 	#fi
 
+    [ -x ~/bin/auto_env.sh ] && ~/bin/auto_env.sh -s home vim bash webdev fluxbox &
+
 	export fail
 	export psme
 	export xm

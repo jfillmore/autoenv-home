@@ -111,14 +111,6 @@ detect_http_agent() {
     echo "$agent"
 }
 
-sync_target() {
-    local target
-    if [ $# -ne 1 ]; then
-        fail "Missing argument to sync_target: target."
-    fi
-    target="$1"
-}
-
 # collect args
 # ==========================================
 if [ $# -eq 0 ]; then

@@ -1,0 +1,85 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+#===========================================================================
+
+function fail() {
+	echo "$@" >&2
+	exit 101
+}
+
+function usage() {
+	cat <<- EOI
+	usage: $SCRIPT_NAME num_passwords [args]
+
+	arguments:
+		-h|--help|-H      This information.
+		-v|--verbose      Print verbose debugging information to standard error.
+		-l|--length #     Password length (default: 8)
+	EOI
+}
+
+function : {
+	[ $# -gt 1 ] && fail ": function called with more than one arguments. This is unsafe to do."
+	if [ $verbose -eq 1 ]; then
+		echo "$@" >&2
+	fi
+}
+#--------------------------------------------------------------------------
+
+function generate_password() {
+	local password
+	local i
+	local j
+	for (( i = 0; i < $num_passwords; i++ )); do
+		password=''
+		for (( j = 0; j < length; j++ )); do
+			# "pick a random character bank"
+			char_bank=${char_banks[$(($RANDOM % ${#char_banks[*]}))]}
+			# "and add random chacter from that bank to the password"
+			password="$password${char_bank:$(($RANDOM % ${#char_bank})):1}"
+			: "partial password: $password"
+		done
+		echo "$password"
+	done
+}
+
+#===========================================================================
+
+# whether to be verbose in actions
+declare verbose=0
+# password length
+declare length=8
+# characters to be used for passwords
+declare -a char_banks=("$(echo {a..z} | tr -d ' ')" "$(echo {A..Z} | tr -d ' ')" "$(echo {0..9} | tr -d ' ')")
+# number of passwords to generate
+declare num_passwords=1
+
+while [ $# -gt 0 ]; do
+	arg="$1"
+	shift
+	case "$arg" in
+		-h|--help|-H)
+			usage
+			exit
+			;;
+		-l|--length)
+			[ $# -ge 1 ] || fail "Please specify a password length to use."
+			length="$1"
+			shift
+			# "ensure the password is valid"
+			[[ $length -le 64 && $length -ge 5 ]] || fail "Invalid input: '$length'. Password length must be between 5 and 64, inclusive."
+			;;
+		-v|--verbose)
+			verbose=1
+			;;
+		*)
+			[[ $arg -gt 0 && $arg -le 100 ]] || fail "Number of passwords must be between 1 and 100; can't use '$arg'."
+			num_passwords=$arg
+			;;
+	esac
+done
+
+generate_password

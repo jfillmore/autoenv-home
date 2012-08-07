@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+	echo "usage: usage: cat [file] | $0 [ <awk column> ] [ <awk seperator> ]"
+	echo ""
+	echo "You must specify the column if you need to specify the seperator"
+	exit 1
+fi
+
+# which column do we want from awk?
+if [ -z $1 ]; then
+	col='$'1
+else
+	col='$'$1
+fi
+# and what delimeter are we using?
+if [ ! -z $2 ]; then
+	awkParam="-F$2"
+fi
+
+awk $awkParam "{print $col}" | sort | uniq -c | sort -nr

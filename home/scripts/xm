@@ -1,0 +1,161 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+CLIENT=nyxmms2
+
+#===========================================================================
+
+# code inside this block will be automatically executed just prior to application failure if "fail" is used to abort
+	
+function fail() {
+	echo "$@"
+	exit 101
+}
+
+function usage() {
+	cat << EOI
+usage: $SCRIPT_NAME command [-h|--help]
+
+commands:
+	get_song - returns the file name of the current song
+	list - list current song, last one played, and the next several queued
+	mark - writes the file name of the current song to a file and to the screen
+	next - advance to next song, print file name
+	prev - return to previous song, print file name
+	slink DIR - creates a softlink in the specified directory to file for the current song
+	hlink DIR - creates a hardlink in the specified directory to file for the current song
+	kill - delete the file for current song w/o a prompt
+	* - pass on to client
+EOI
+}
+
+function : {
+	[ $# -gt 1 ] && fail ": function called with more than one arguments. This is unsafe to do."
+	if [ $verbose -eq 1 ]; then
+		echo "$@" >&2
+	fi
+}
+
+#--------------------
+
+function xm_get_song {
+	# e.g. [server] url = file:///home/jonny/Downloads/Underworld 1,2,3 OST/AFI - Miss Murder (VNV Nation Rmx).mp3
+	local cur_file=$($CLIENT info | awk '$2 == "url" {print $0}') || fail "Failed to get name of current song"
+	cur_file="${cur_file:22}"
+	python -c 'import urllib; import sys; print urllib.unquote(sys.argv[1]);' "${cur_file//+/ }"
+}
+
+function xm_list {
+	local count offset before after
+	if [ $# -eq 2 ]; then
+		count="$1"
+		[ $count -gt 0 ] || fail "Invalid number of items to list: $count."
+		offset="$2"
+		[ $offset -gt 0 ] || fail "Invalid list history offset: $offset."
+	elif [ $# -eq 1 ]; then
+		count="$1"
+		[ $count -gt 0 ] || fail "Invalid number of items to list: $count."
+		offset=1
+	else
+		count=6
+		offset=1
+	fi
+	[ $count -lt $((offset+1)) ] && fail "The offset must be smaller than the number of list items to return."
+	let after=count-\(offset+1\)
+	$CLIENT list | grep -B$offset -A$after '^->\['
+}
+
+function xm_add {
+	$CLIENT add -f "$@"
+}
+
+function xm_prev {
+	$CLIENT prev "$@"
+	sleep 0.25
+	xm_get_song
+}
+
+function xm_next {
+	$CLIENT next "$@"
+	sleep 0.25
+	xm_get_song
+}
+
+function xm_kill {
+	$CLIENT next
+	rm -f "$cur_file"
+	sleep 0.25
+	xm_get_song
+}
+
+function xm_mark {
+	date=$(date +%F)
+	echo "[$date] $cur_file" >> /home/jonny/.marked_songs
+	echo "$cur_file"
+}
+
+function xm_slink {
+	[ $# -ne 1 ] && fail "Missing directory to create soft link in."
+	local dir="$1"
+	[ -d "$dir" ] || fail "Directory '$dir' does not exist."
+	cd "$dir" || fail "Unable to access directory '$dir'."
+	ln -sf "$cur_file" "$dir/" || fail "Failed to soft-link '$cur_file' to '$dir'."
+	du -h --max-depth=0
+}
+
+function xm_hlink {
+	[ $# -ne 1 ] && fail "Missing directory to create hard link in."
+	local dir="$1"
+	[ -d "$dir" ] || fail "Directory '$dir' does not exist."
+	cd "$dir" || fail "Unable to access directory '$dir'."
+	ln -f "$cur_file" "$dir/" || fail "Failed to hard-link '$cur_file' to '$dir'."
+	du -h --max-depth=0
+}
+
+#===========================================================================
+
+declare cur_file=$(xm_get_song)
+
+[ $# -eq 0 ] && {
+	usage
+	exit 1
+}
+
+cmd="$1"
+shift
+case "$cmd" in
+	-h|--help)
+		usage
+		;;
+	kill)
+		xm_kill
+		;;
+	mark)
+		xm_mark
+		;;
+	list)
+		xm_list "$@"
+		;;
+	add)
+		xm_add "$@"
+		;;
+	prev)
+		xm_prev "$@"
+		;;
+	next)
+		xm_next "$@"
+		;;
+	get_song)
+		xm_get_song
+		;;
+	slink)
+		xm_slink "$@"
+		;;
+	hlink)
+		xm_hlink "$@"
+		;;
+	*)
+		$CLIENT "$cmd" "$@"
+		;;
+esac

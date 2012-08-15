@@ -11,7 +11,8 @@ HTTP_AGENT= # will be auto detected (e.g. wget/curl)
 TMP_DIR="$HOME/.$SCRIPT_NAME"
 
 # specified in arguments
-auto_env_url="https://localhost/auto_env"
+#auto_env_url="https://localhost/auto_env"
+auto_env_url="https://github.com/jfillmore/auto_env/tree/master/"
 verbose=0
 force=0
 action=''

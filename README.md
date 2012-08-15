@@ -4,9 +4,9 @@ Auto-env shell script and my preferred default resource files. Requires cURL or 
 Download auto_env
 -------------------
     mkdir ~/bin && cd ~/bin
-    wget -q https://github.com/jfillmore/auto_env/blob/master/auto_env/bin/auto_env.sh
+    wget https://raw.github.com/jfillmore/auto_env/master/auto_env/bin/auto_env.sh
     chmod 755 auto_env.sh
-    ./auto_env --help
+    ./auto_env.sh --help
 
 Examples
 ------------------

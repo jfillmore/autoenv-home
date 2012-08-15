@@ -188,6 +188,7 @@ if [ $action = 'index' ]; then
             rm .index.auto_env.$$ &>/dev/null
             fail "Failed to generate checksum list for directory '$dir'."
         fi
+        # TODO: look for things in the existing index file and report how many new/changed/added
         # filter and augument the list
         scripts=0 # out of curiosity, how many were scripts?
         while read checksum path; do

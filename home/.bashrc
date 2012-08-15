@@ -87,10 +87,6 @@ if [[ "$-" =~ 'i' ]]; then
 			alias core='ssh -i ~/repo/memory/jkf-3-17-12b wendel@jonnyb0y.name -p 222 -o TCPKeepAlive=yes -o ServerAliveInterval=90'
 		fi
 	fi
-	alias bridge='ssh -i ~/repo/work/keys/jkf-4-9-12 dev_jfillmore@il-bridge.slc.westdc.net -p 8888'
-	alias home='ssh -i ~/repo/memory/jkf-3-17-12b wendel@jonnyb0y.name -p 222'
-	alias beefcake='ssh -i ~/repo/memory/jkf-3-17-12b jonny@192.168.1.2'
-	alias sysadmin='ssh -i ~/repo/work/keys/jkf-4-9-12 dev_jfillmore@sysadmin.west-datacenter.net'
     alias chimera="ssh -i ~/repo/work/keys/jkf-3-17-12 jonny@10.1.30.80"
     alias chimera_db="ssh -i ~/repo/work/keys/jkf-3-17-12 jonny@10.1.30.2"
 
@@ -149,7 +145,7 @@ if [[ "$-" =~ 'i' ]]; then
 	#	export XMMS_PATH='tcp://192.168.1.2:6800'
 	#fi
 
-    [ -x ~/bin/auto_env.sh ] && ~/bin/auto_env.sh -s bash vim bash webdev fluxbox home &
+    [ -x ~/bin/auto_env.sh ] && ~/bin/auto_env.sh -s bash vim bash webdev fluxbox home &>/dev/null & disown -r    
 
 	export fail
 	export psme

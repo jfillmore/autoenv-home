@@ -12,7 +12,7 @@ TMP_DIR="$HOME/.$SCRIPT_NAME"
 
 # specified in arguments
 #auto_env_url="https://localhost/auto_env"
-auto_env_url="https://github.com/jfillmore/auto_env/tree/master/"
+auto_env_url="https://raw.github.com/jfillmore/auto_env/master/"
 verbose=0
 force=0
 action=''

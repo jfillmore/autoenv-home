@@ -1,2 +1,3 @@
 0  abe22f60390a46fda6c7fd175e8e2a8bdc539e5c  ./scripts/compiler.jar
 0  3e517ffcdc88e551c5dccd74e3bd437c81643793  ./scripts/jslint.js
+1  8dd8b525a86dffaff819b713be11a8b1050eadcb  ./scripts/git_stats.sh

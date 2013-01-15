@@ -100,6 +100,11 @@ hi Search ctermbg=darkblue guibg=#0000AA ctermfg=lightcyan guifg=#55FFFF
 " Special Key
 "hi SpecialKey
 
+" Tab bar
+hi TabLineFill ctermfg=grey ctermbg=white
+hi TabLine ctermfg=black ctermbg=grey
+hi TabLineSel ctermfg=white ctermbg=darkgrey
+
 " Title
 "hi Title
 

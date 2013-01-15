@@ -28,7 +28,7 @@ set formatoptions-=cro
 inoremap # x#
 fixdel
 
-" --- Shortcuts
+" --- Shortcuts ---
 " make it easy to paste formatted text
 noremap <F4> :set autoindent!<CR>:set smartindent!<CR>
 " show/hide line numbers
@@ -36,6 +36,14 @@ noremap <F5> :set number!<CR>
 " show/hide search highlighting
 noremap <F6> :set hlsearch!<CR>
 set backspace=indent,eol,start
+
+" --- Macros ---
+" git conflict highlighting
+let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)^M'                                                                                                                                                      
+" git conflict - keep top portion of conflict
+let @t = 'ddnVnxnz.'
+" git conflict - keep bottom portion of conflict
+let @b = 'Vnxnddnz.'
 
 " --- Style ---
 syntax on

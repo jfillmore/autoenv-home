@@ -39,7 +39,7 @@ set backspace=indent,eol,start
 
 " --- Macros ---
 " git conflict highlighting
-let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)^M'                                                                                                                                                      
+let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)'
 " git conflict - keep top portion of conflict
 let @t = 'ddnVnxnz.'
 " git conflict - keep bottom portion of conflict

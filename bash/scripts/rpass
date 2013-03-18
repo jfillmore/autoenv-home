@@ -56,6 +56,8 @@ declare length=8
 declare -a char_banks=("$(echo {a..z} | tr -d ' ')" "$(echo {A..Z} | tr -d ' ')" "$(echo {0..9} | tr -d ' ')")
 # number of passwords to generate
 declare num_passwords=1
+# for *some* sanity checking
+declare max_length=65535
 
 while [ $# -gt 0 ]; do
 	arg="$1"
@@ -69,8 +71,7 @@ while [ $# -gt 0 ]; do
 			[ $# -ge 1 ] || fail "Please specify a password length to use."
 			length="$1"
 			shift
-			# "ensure the password is valid"
-			[[ $length -le 64 && $length -ge 5 ]] || fail "Invalid input: '$length'. Password length must be between 5 and 64, inclusive."
+			[[ $length -le $max_length && $length -ge 5 ]] || fail "Invalid input: '$length'. Password length must be between 5 and $max_length, inclusive."
 			;;
 		-v|--verbose)
 			verbose=1

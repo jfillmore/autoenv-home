@@ -1,0 +1,160 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+test_ssh() {
+	ssh \
+		-o StrictHostKeyChecking=no \
+		-o ConnectTimeout=$SSH_TIMEOUT \
+		-p $SSH_PORT \
+		-i $SSH_KEY \
+		$SSH_USER@$SSH_HOST \
+		"$@"
+}
+
+test_tun() {
+	telnet localhost "$1" </dev/null 2>&1 \
+		| grep -q '^Connected to'
+}
+
+tunnel() {
+	ssh \
+		-o StrictHostKeyChecking=no \
+		-o ConnectTimeout=$SSH_TIMEOUT \
+		-o TCPKeepAlive=yes \
+		-o ServerAliveInterval=$SSH_KEEPALIVE \
+		-p $SSH_PORT \
+		-i $SSH_KEY \
+		-N \
+		$SSH_USER@$SSH_HOST \
+		-L "$1" \
+		&
+}
+
+debug() {
+    [ "$VERBOSE" -eq 1 ] && echo "+ [$@]" >&2
+}
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME [OPTIONS] SSH_USER@SSH_HOST TUNNEL [TUNNEL...]
+(e.g.)
+[you@box ~]$ $SCRIPT_NAME -i ~/.ssh/bob.key -p 222 \\
+    bob@somehost.com \\
+    8000/example.com/80 \\
+    8443/example.com/443
+
+OPTIONS:
+    -d|--dry-run          Perform all tests, but do not start any SSH tunnels
+    -h|--help             This information
+    -i|--ident FILE       SSH private key file
+    -k|--keep-alive NUM   SSH keep-alive value (def: $SSH_KEEPALIVE sec)
+    -p|--port PORT        SSH port (def: $SSH_PORT)
+    -t|--timeout NUM      SSH connect timeout (def: $SSH_TIMEOUT sec)
+    -v|--verbose          Print debugging information to stdout
+
+TUNNEL: SSH tunnel specification (e.g. "8000/example.com/80"). Multiple tunnels may be provided.
+EOI
+}
+
+
+# collect args
+# ==========================================
+
+SSH_PORT=22
+SSH_TIMEOUT=5
+SSH_KEEPALIVE=90
+SSH_USER=''
+SSH_HOST=''
+SSH_KEY=''
+SSH_TUNNELS=''
+VERBOSE=0
+DRYRUN=0
+
+if [ $# -lt 2 ]; then
+    usage
+    exit 1;
+fi
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in 
+        --keep-alive|-k)
+            [ $# -ge 1 ] || fail "Missing argument to '--keep-alive' switch."
+            SSH_KEEPALIVE=$1
+            shift
+            ;;
+        --timeout|-t)
+            [ $# -ge 1 ] || fail "Missing argument to '--timeout' switch."
+            SSH_TIMEOUT=$1
+            shift
+            ;;
+        --ident|-i)
+            [ $# -ge 1 ] || fail "Missing argument to '--ident' switch."
+            SSH_KEY="$1"
+            [ "$SSH_KEY" ] || fail "The SSH key cannot be blank."
+            shift
+            ;;
+        --dry-run|-d)
+            DRYRUN=1
+            ;;
+        --verbose|-v)
+            VERBOSE=1
+            ;;
+        --port|-p)
+            [ $# -ge 1 ] || fail "Missing argument to '--port' switch."
+            SSH_PORT=$1
+            shift
+            ;;
+        --help|-h)
+            usage
+            exit
+            ;;
+        *)
+            # first time it's the user/host, after that tunnels
+            if [ ! $SSH_USER ]; then
+                ssh_str="$arg"
+                SSH_USER=${ssh_str%%@*}
+                SSH_HOST=${ssh_str##*@}
+            else
+                # make sure it looks like a tunnel
+                [ 3 -eq $(echo "$arg" | awk -F'/' '{print NF}') ] \
+                    || fail "Invalid SSH tunnel format: $arg"
+                SSH_TUNNELS="$SSH_TUNNELS $arg"
+            fi
+            ;;
+    esac
+done
+
+# is the SSH key found and host reachable?
+[ "$SSH_KEY" -a -f "$SSH_KEY" ] \
+    || fail "Unable to locate SSH key file '$SSH_KEY'."
+debug "Testing SSH ($SSH_USER@$SSH_HOST:$SSH_PORT)"
+whoami=$(test_ssh whoami) \
+    || fail "Failed to connect to $SSH_HOST."
+if [ "$whoami" != "$SSH_USER" ]; then
+	fail "Got '$whoami' back from SSH test, but $SSH_USER was expected."
+fi
+
+# and now off to the races
+for tunnel in $SSH_TUNNELS; do
+    local_port=$(echo "$tunnel" | awk -F'/' '{print $1}')
+    if test_tun $local_port; then
+        debug "Local port $local_port is already open"
+    else
+        remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
+        debug "Tunneling localhost:$local_port => $remote_host"
+        if [ $DRY_RUN -eq 0 ]; then
+            tunnel $tunnel \
+                || fail "Failed to create SSH tunnel '$tunnel'"
+        fi
+    fi
+done
+
+exit 0

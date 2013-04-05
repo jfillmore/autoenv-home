@@ -167,6 +167,7 @@ if [ $target_ctr -eq 0 ]; then
     usage
     fail "No directories/targets specified."
 fi
+shasum="$(which shasum) -a 1" || fail "Failed to locate 'shasum' binary."
 
 # and do our job!
 # ==========================================
@@ -183,7 +184,7 @@ if [ $action = 'index' ]; then
         cd "$dir" || fail "Failed to change to '$dir'."
         # generate checksums for everything in here
         # don't overwrite the existing index until we are done
-        find ./ -type f -print0 | xargs -0 sha1sum > .index.auto_env.$$
+        find ./ -type f -print0 | xargs -0 $shasum > .index.auto_env.$$
         if [ $? -ne 0 ]; then
             rm .index.auto_env.$$ &>/dev/null
             fail "Failed to generate checksum list for directory '$dir'."
@@ -255,7 +256,7 @@ elif [ "$action" = 'sync' ]; then
                 || fail "Failed to download '$TMP_DIR/$target/$path'."
             # TODO: check return code for 200-299 http response
             # does the checksum match?
-            new_checksum=$(sha1sum "$TMP_DIR/$file_name" | awk '{print $1}') \
+            new_checksum=$($shasum "$TMP_DIR/$file_name" | awk '{print $1}') \
                 || fail "Failed to generate checksum for '$path'."
             if [ $new_checksum != $checksum ]; then
                 preview_lines=6
@@ -269,7 +270,7 @@ elif [ "$action" = 'sync' ]; then
             # do we have this file already, and with a matching checksum?
             file_changed=1
             if [ -e "$base_dir/$file_name" ]; then
-                old_checksum=$(sha1sum "$base_dir/$file_name" | awk '{print $1}') \
+                old_checksum=$($shasum "$base_dir/$file_name" | awk '{print $1}') \
                     || fail "Failed to generate checksum for exiting copy of '$path'."
                 if [ $old_checksum = $checksum ]; then
                     if [ $force -ne 1 ]; then

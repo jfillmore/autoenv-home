@@ -150,7 +150,7 @@ for tunnel in $SSH_TUNNELS; do
     else
         remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
         debug "Tunneling localhost:$local_port => $remote_host"
-        if [ $DRY_RUN -eq 0 ]; then
+        if [ $DRYRUN -eq 0 ]; then
             tunnel $tunnel \
                 || fail "Failed to create SSH tunnel '$tunnel'"
         fi

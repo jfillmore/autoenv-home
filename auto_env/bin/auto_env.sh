@@ -108,6 +108,7 @@ detect_http_agent() {
             agent="$agent --no-check-certificate"
         fi
         agent="$agent --quiet"
+        fail "Currently unable to use 'wget' due to a bug somewhere :)"
     fi
     echo "$agent"
 }

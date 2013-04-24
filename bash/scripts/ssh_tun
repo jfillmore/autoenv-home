@@ -24,7 +24,9 @@ test_tun() {
 }
 
 tunnel() {
-	ssh \
+    cmd=ssh
+    [ $DRYRUN -eq 1 -a $VERBOSE -eq 1 ] && cmd="echo $cmd"
+	$cmd \
 		-o StrictHostKeyChecking=no \
 		-o ConnectTimeout=$SSH_TIMEOUT \
 		-o TCPKeepAlive=yes \
@@ -136,6 +138,9 @@ done
 [ "$SSH_KEY" -a -f "$SSH_KEY" ] \
     || fail "Unable to locate SSH key file '$SSH_KEY'."
 debug "Testing SSH ($SSH_USER@$SSH_HOST:$SSH_PORT)"
+ssh-agent -k &>/dev/null
+eval `ssh-agent -s` &>/dev/null
+ssh-add "$SSH_KEY" 2>/dev/null
 whoami=$(test_ssh whoami) \
     || fail "Failed to connect to $SSH_HOST."
 if [ "$whoami" != "$SSH_USER" ]; then
@@ -150,10 +155,8 @@ for tunnel in $SSH_TUNNELS; do
     else
         remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
         debug "Tunneling localhost:$local_port => $remote_host"
-        if [ $DRYRUN -eq 0 ]; then
-            tunnel $tunnel \
-                || fail "Failed to create SSH tunnel '$tunnel'"
-        fi
+        tunnel $tunnel \
+            || fail "Failed to create SSH tunnel '$tunnel'"
     fi
 done
 

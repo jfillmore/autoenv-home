@@ -168,7 +168,9 @@ if [ $target_ctr -eq 0 ]; then
     usage
     fail "No directories/targets specified."
 fi
-shasum="$(which shasum) -a 1" || fail "Failed to locate 'shasum' binary."
+shasum="$(which shasum) -a 1" \
+    || whasum=$(which sha1sum) \
+    || fail "Failed to locate 'shasum' or 'sha1sum' binary."
 
 # and do our job!
 # ==========================================

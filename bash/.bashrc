@@ -79,7 +79,7 @@ if [[ "$-" =~ 'i' ]]; then
     setPrompt "${HOSTNAME%%.*}" 
 
     if [ -f "$HOME/.bashrc.local" ]; then
-        . "$HOME/bashrc.local"
+        . "$HOME/.bashrc.local"
     fi
 fi
 

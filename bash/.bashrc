@@ -77,5 +77,9 @@ if [[ "$-" =~ 'i' ]]; then
 
     unset PROMPT_COMMAND
     setPrompt "${HOSTNAME%%.*}" 
+
+    if [ -f "$HOME/.bashrc.local" ]; then
+        . "$HOME/bashrc.local"
+    fi
 fi
 

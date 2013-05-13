@@ -3,6 +3,7 @@
     [exec] (terminator) {terminator} </usr/share/icons/hicolor/16x16/apps/terminator.png>
     [exec] (gimp) {gimp} </usr/share/icons/hicolor/16x16/apps/gimp.png>
     [exec] (vlc) {vlc} </usr/share/icons/hicolor/16x16/apps/vlc.png>
+    [exec] (libreoffice calc) {/usr/lib/libreoffice/program/oosplash --calc} </usr/share/icons/gnome/16x16/apps/libreoffice-calc.png>
     [exec] (files...) {nautilus --no-desktop}
     [submenu] (System) {}
         [include] (/etc/X11/fluxbox/fluxbox-menu)

@@ -281,6 +281,15 @@ elif [ "$action" = 'sync' ]; then
                         file_changed=0
                     fi
                 fi
+                # regardless of the file changed make sure the exec bit is set right
+                if [ $file_changed -eq 0 \
+                    -a $exec_bit = '1' \
+                    -a ! -x "$base_dir/$file_name" \
+                    ]; then
+                    rem "-- toggling execution bit"
+                    chmod u+x "$base_dir/$file_name" \
+                        || fail "Failed to chmod 'u+x' file '$base_dir/$file_name'."
+                fi
             fi
             if [ $file_changed -eq 1 ]; then
                 # was this a script?

@@ -1,0 +1,38 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+LCD_DIR="/sys/class/backlight/intel_backlight"
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME 1-100
+
+Dim the screen between 1 and 100%.
+EOI
+}
+
+
+# collect args
+# ==========================================
+
+if [ $# -ne 1 ]; then
+    usage
+    exit 1;
+fi
+percent=$1
+if [ $percent -gt 100 -o $percent -lt 1 ]; then
+    fail "Invalid percentage: $percent. A number between 0 and 100 is expected."
+fi
+
+cd "$LCD_DIR" || fail "Failed to cd to '$LCD_DIR'."
+[ -f max_brightness ] || fail "Can't find max_brightness file."
+[ -f brightness ] || fail "Can't find brightness file."
+max=$(<max_brightness) || fail "Failed to read max_brightness file."
+new=$(echo "$max * ($percent/100)" | bc -l | awk -F'.' '{print $1}')
+echo "$new" > brightness || fail "Failed to set brightness."

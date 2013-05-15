@@ -58,17 +58,19 @@ Mod4 8 :Tab 8
 Mod4 9 :Tab 9
 
 # open a terminal
-Mod1 F1 :Exec x-terminal-emulator
+Mod1 F1 :Exec terminator
 
 # open a dialog to run programs
 Mod1 F2 :Exec fbrun
 
 # volume settings, using common keycodes
-# if these don't work, use xev to find out your real keycodes
 123 :Exec amixer sset Master,0 10%+
 122 :Exec amixer sset Master,0 10%-
-# doesn't re-enable :(
 121 :Exec amixer sset Master,0 toggle
+
+# brightness controls
+None XF86MonBrightnessUp :Exec sudo ~jkf/scripts/dimmer +20
+None XF86MonBrightnessDown :Exec sudo ~jkf/scripts/dimmer -20
 
 # current window commands
 Mod1 F4 :Close

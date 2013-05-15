@@ -11,28 +11,47 @@ fail() {
 
 usage() {
     cat <<EOI
-Usage: $SCRIPT_NAME 1-100
+Usage: $SCRIPT_NAME [+-]1-100
 
-Dim the screen between 1 and 100%.
+Set the screen brightness between 1 and 100% or by some increment.
+e.g.
+    $SCRIPT_NAME 1 # min brightness
+    $SCRIPT_NAME 50 # half way
+    $SCRIPT_NAME +10 # 60%
+    $SCRIPT_NAME +40 # 100%
 EOI
 }
 
-
-# collect args
+# sanity check
 # ==========================================
-
 if [ $# -ne 1 ]; then
     usage
     exit 1;
 fi
-percent=$1
-if [ $percent -gt 100 -o $percent -lt 1 ]; then
-    fail "Invalid percentage: $percent. A number between 0 and 100 is expected."
-fi
-
 cd "$LCD_DIR" || fail "Failed to cd to '$LCD_DIR'."
 [ -f max_brightness ] || fail "Can't find max_brightness file."
 [ -f brightness ] || fail "Can't find brightness file."
+
+# arguments
+# ==========================================
+percent=$1
+[ ${#percent} -ge 1 ] || {
+    usage
+    fail
+}
+sign=${percent:0:1}
+if [ $sign == '-' -o $sign == '+' ]; then
+    base=$(<brightness)
+    percent=${percent:1}
+else
+    base=0
+    sign='+'
+fi
+
+# calculate the proper brightness and set it
 max=$(<max_brightness) || fail "Failed to read max_brightness file."
-new=$(echo "$max * ($percent/100)" | bc -l | awk -F'.' '{print $1}')
+new=$(echo "$base $sign ($max * ($percent/100))" | bc -l | awk -F'.' '{print $1}')
+min=$((max/25))
+[ $new -lt $min ] && new=$min
+[ $new -gt $max ] && new=$max
 echo "$new" > brightness || fail "Failed to set brightness."

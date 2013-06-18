@@ -160,6 +160,7 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
 # quick sanity check...
 if [ ${#action} -eq 0 ]; then
     fail "Please specify an action of either --index or --sync."
@@ -168,8 +169,8 @@ if [ $target_ctr -eq 0 ]; then
     usage
     fail "No directories/targets specified."
 fi
-shasum="$(which shasum) -a 1" \
-    || whasum=$(which sha1sum) \
+shasum="$(which shasum 2>/dev/null) -a 1" \
+    || shasum=$(which sha1sum 2>/dev/null) \
     || fail "Failed to locate 'shasum' or 'sha1sum' binary."
 
 # and do our job!

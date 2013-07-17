@@ -7,10 +7,18 @@
 # Licensed under the MIT license. See LICENSE file.
 # http://www.opensource.org/licenses/mit-license.php
 
+# TODO:
+#   * 'grep -v' to selectively hide instead of include
+#   * '//foo' floating extraction
+#   * filter (or include) results based on values (e.g. "-f 'foo/id >= 3'")
+#   * verbose debugging to troubleshoot filtering/extraction
+
+# DEBUG
+#import pdb
+
 import sys
 import re
 import collections
-import select
 try:
     import json
 except:
@@ -18,187 +26,320 @@ except:
     json = simplejson
 
 def usage():
-    sys.stdout.write('''usage: json [ARGS] [JSON_STRING]
+    sys.stdout.write('''usage: json [ARGS] [JSON_FILE]
 
-Pretty prints JSON by default. If --extract is given, values will be extracted instead in the order requested. If the '--sh' option is given pair values will be returned.
+Pretty prints JSON by default. If a file is given it will be read for JSON data; otherwise STDIN will be read instead.
 
-arguments:
-   RUN MODES
-   -p, --pairs            Convert to name=value for easy variable assignment.
-   -h, --help             This information.
-   -q, --quiet            If a path cannot be extracte quiety ignore it.
-   -x, --extract PATH     Extract one or more values from the result (e.g. 'user/id', 'server/ip_addresses/*/ip'). May be repeated.
+ARGUMENTS:
+   -p|--pairs            Convert to name=value for easy variable assignment.
+   -h|--help             This information.
+   -q|--quiet            If a path cannot be extracted/followed quiety ignore it.
+   -j|--json JSON        Parse JSON from command-line parameter instead of from a file.
+   -x|--extract PATH     Extract one or more values from the result matching PATH. May be repeated.
+   -X|--exclude PATH     Trim out data from being returned based on a PATH.
+   -F|--fs FIELD_SEP     Sets the field separator for path (default: '/').
+   -S|--no-sort          Do not sort JSON object keys (default: false).
+   -d|--debug            Display debugging information on STDERR.
+   -i|--indent INDENT    Indent JSON formatted output with spaces (default: 4).
 
+PATHS 
+    The JSON data can be filtered based on index, key matches, ranges, etc. The field separator between path parts can be changed with the -F|--fs option.
+
+    Arrays:
+        By Index:
+         - 'foo/0', 'foo/2', 'foo/-1' (last item)
+        By Range:
+         - 'foo/:' or 'foo/*' (all items within the array),
+         - 'foo/2:', 'foo/:2', 'foo/1:5', 'foo/-2:' (last 2),
+         - 'foo/:-2' (all but last two),
+         - 'foo/1:-3' (between first and up until 3rd to last)
+    Dictionaries:
+        Regular Expressions:
+         - 'foo/b..?r' = foo/bar, foo/beer
+         - 'foo/bar/.*[pP]assw(or)?d' == anything within foo/bar that looks like a password
 
 examples:
     > json='{"id": 3, "name: "bob", "lols": {"a": 1, "b": 2}}'
-    > json -x id "$json" -x lols -x lols/b
+    > echo "$json" | json -x id -x lols -x lols/b -i 0
     3
     {"a": 1, "b": 2}
     2
-    > json -x lols/* -s "$json"
-    a=3
-    b=3
+    > echo "$json" | json -p -x lols/\*
+    lols_a=3
+    lols_b=3
 ''')
 
 def get_opts(defaults, argv):
     i = 1
-    args = defaults
+    opts = defaults
     while i < len(argv):
         arg = argv[i]
         if arg == '-h' or arg == '--help':
             usage()
             exit()
         elif arg == '-q' or arg == '--quiet':
-            args['quiet'] = True
+            opts['quiet'] = True
         elif arg == '-p' or arg == '--pairs':
-            args['pairs'] = True
+            opts['pairs'] = True
+        elif arg == '-S' or arg == '--no-sort':
+            opts['sort_keys'] = False
+        elif arg == '-d' or arg == '--debug':
+            opts['debug'] = True
+        elif arg == '-i' or arg == '--indent':
+            i += 1
+            if i == len(argv):
+                raise Exception("Missing number of spaces to use for --indent.")
+            opts['indent'] = int(argv[i])
+            if not opts['indent']:
+                opts['indent'] = None
+        elif arg == '-F' or arg == '--fs':
+            i += 1
+            if i == len(argv):
+                raise Exception("Missing field separator argument to --fs.")
+            if len(argv[i]) != 1:
+                raise Exception("The field separator must be a single character.")
+            opts['separator'] = argv[i]
+        elif arg == '-j' or arg == '--json':
+            i += 1
+            if i == len(argv):
+                raise Exception("Missing JSON string for '--json' parameter.")
+            if opts['json']:
+                raise Exception("JSON data cannot be provided more than once via the '--json' parameter.")
+            if opts['json_file']:
+                raise Exception("Unable to use both --json and specify a JSON input file.")
+            opts['json'] = argv[i]
+        elif arg == '-X' or arg == '--exclude':
+            i += 1
+            if i == len(argv):
+                raise Exception("Missing path to exclude.")
+            opts['exclude'].append(argv[i])
         elif arg == '-x' or arg == '--extract':
             i += 1
             if i == len(argv):
                 raise Exception("Missing path to extract.")
-            args['extract'].append(argv[i])
+            opts['extract'].append(argv[i])
         else:
-            # json encoded string
-            args['json'] = arg
+            # json encoded file
+            if opts['json_file']:
+                raise Exception("Cannot use '%s'; the JSON input file '%s was already specified." % (arg, opts['json_file']))
+            if opts['json']:
+                raise Exception("Unable to use both --json and specify a JSON input file.")
+            opts['json_file'] = arg
         i += 1
-    return args
+    return opts
 
-def extract(obj, path, seperator = '/', pairs = False, prefix = '', quiet = False):
-    """Extract values from an object based on a path. e.g.
-    obj = {'foo': 3, 'bar': 4, 'sue': {'lol': 'a', 'rofl': 'b'}}
-    extract(obj, 'sue/*') == ['a', 'b']
-    extract(obj, 'sue/rofl') == 'b'"""
-    # break the path into it's parts
-    parts = path.split(seperator)
-    max_depth = len(parts)
-    depth = 1
-    ptr = obj
-    retval = []
-    debug = False
-    for part in parts:
-        if prefix:
-            prefix = prefix + seperator
-        if part == '*':
-            # coerce to list if needed, we're getting multiple results back
-            if type(retval) != type([]) or type(retval) != type({}):
-                if pairs:
-                    retval = {}
-                else:
-                    retval = []
-            if not isinstance(ptr, collections.Iterable):
-                if quiet:
-                    return retval
-                else:
-                    raise Exception("Unable to locate '%s' within object." % (part))
-            for item in ptr:
-                path = prefix + item
-                if depth == max_depth:
-                    if pairs:
-                        retval[path] = ptr[item]
-                    else:
-                        retval.append(ptr[item])
-                else:
-                    if debug:
-                        print "+ Parsing %s for %s, prefix=%s" % (json.dumps(ptr[item]), seperator.join(parts[depth:]), path)
-                    if pairs:
-                        results = extract(
-                            ptr[item],
-                            seperator.join(parts[depth:]),
-                            seperator,
-                            pairs,
-                            path,
-                            quiet
-                        )
-                        if results:
-                            retval = dict(results.items() + retval.items())
-                    else:
-                        results = extract(
-                            ptr[item],
-                            seperator.join(parts[depth:]),
-                            seperator,
-                            quiet = quiet,
-                            prefix = path
-                        )
-                        if results:
-                            retval = retval + results
-        else:
-            prefix = prefix + part
-            if debug:
-                print "+ Looking for %s in %s, prefix=%s" % (
-                    part, json.dumps(ptr), prefix
-                )
-            if part in ptr:
-                # decend deeper, or have we found the item?
-                if depth == max_depth:
-                    if debug:
-                        print "+ Adding result (prefix=%s): %s" % (
-                            prefix, json.dumps(ptr[part])
-                        )
-                    if pairs:
-                        if retval != type({}):
-                            retval = {}
-                        retval[prefix] = ptr[part]
-                    else:
-                        retval.append(ptr[part])
-                else:
-                    ptr = ptr[part]
+def dump_obj(obj, max_len = 48):
+    txt = json.dumps(obj, ensure_ascii = True)
+    if max_len and len(txt) > max_len:
+        json_len = len(txt)
+        if json_len > max_len:
+            third = (max_len / 3);
+            third += json_len % 3;
+            txt = ''.join((
+                txt[0:max_len - third],
+                '...',
+                txt[json_len - third:]
+            ))
+        return txt
+
+def parse_keys(obj, path, quiet = False):
+    """Return the keys that we which to decend into based on the path."""
+    keys = []
+    objlen = len(obj)
+    if type(obj) == type([]):
+        # treat * as a full range
+        if path == '*':
+            path = ':';
+        # is it an index value or a range?
+        path_split = path.find(':')
+        if path_split == -1:
+            # index, e.g. -1, 5
+            path = int(path)
+            # is it in range, or do we not even care?
+            if not quiet and (path >= objlen or abs(path) > objlen):
+                raise Exception("Invalid index %s in array." % (path))
             else:
-                if quiet:
-                    return retval
+                # otherwise return the requested element (rounding if needed on quiet mode)
+                if path < 0:
+                    keys = [max(path, -1 * objlen)]
                 else:
-                    raise Exception("Unable to locate '%s' within object." % (part))
-        depth += 1
-    return retval
+                    keys = [min(path, objlen)]
+        else:
+            path = path.strip()
+            parts = path.split(':')
+            if len(parts) != 2:
+                raise Exception("Invalid path part: %s." % (path))
+            # catch empty; coerce to int
+            if parts[0] == '':
+                parts[0] = 0
+            if parts[1] == '':
+                parts[1] = objlen - 1
+            parts = [int(part) for part in parts]
+            if parts[0] < 0:
+                # last X number
+                parts[0] = objlen - abs(parts[0])
+            if parts[1] < 0:
+                # all except last X number
+                parts[1] = objlen - abs(parts[1])
+            elif parts[1]:
+                # always need one more on positive 2nd numbers
+                parts[1] = parts[1] + 1
+            keys = range(parts[0], parts[1])
+    elif type(obj) == type({}):
+        # write our path into a regex to compare against the keys
+        path_re = re.compile(path)
+        keys = [key for key in obj.keys() if re.match(path_re, key)]
+    if not len(keys):
+        raise Exception("Path '%s' in object '%s' not found." % (
+            path,
+            dump_obj(obj)
+        ))
+    return keys
+
+def exclude(obj, path, separator = '/', prefix = '', quiet = False, debug = False):
+    """Exclude values from an object based on a path."""
+    # TODO: finish me!
+    # break the path into parts
+    path_parts = path.split(separator)
+    # keep track of the values we've collected
+    excluded = []
+    if prefix:
+        prefix = prefix + separator
+    for key in parse_keys(obj, path_parts[0], quiet):
+        # try to get the value
+        try:
+            value = obj[key]
+        except:
+            if not quiet:
+                raise Exception("Invalid key '%s' not found in object '%s'." % (key, dump_obj(obj)))
+            continue
+        # our current path thus far
+        subpath = prefix + str(key)
+        # at the end of our path? we've got what we want here
+        if len(path_parts) == 1:
+            excluded.append((subpath, key, value))
+        else:
+            excluded += exclude(
+                value,
+                separator.join(path_parts[1:]),
+                separator,
+                subpath,
+                quiet
+            )
+    return excluded
+
+def extract(obj, path, separator = '/', prefix = '', quiet = False, debug = False):
+    """Extract values from an object based on a path."""
+    # break the path into parts
+    path_parts = path.split(separator)
+    # keep track of the values we've collected
+    extracted = []
+    if prefix:
+        prefix = prefix + separator
+    for key in parse_keys(obj, path_parts[0], quiet):
+        # try to get the value
+        try:
+            value = obj[key]
+        except:
+            if not quiet:
+                raise Exception("Invalid key '%s' not found in object '%s'." % (key, dump_obj(obj)))
+            continue
+        # our current path thus far
+        subpath = prefix + str(key)
+        # at the end of our path? we've got what we want here
+        if len(path_parts) == 1:
+            extracted.append((subpath, key, value))
+        else:
+            extracted += extract(
+                value,
+                separator.join(path_parts[1:]),
+                separator,
+                subpath,
+                quiet
+            )
+    return extracted
 
 # start!
 if __name__ == '__main__':
-    args = get_opts({
-        'json': None,
-        'pairs': False,
-        'quiet': False,
-        'extract': []
-    }, sys.argv)
-
-    # try reading stdin for data
-    if select.select([sys.stdin,], [], [], 0.0)[0]:
-        if args['json']:
-            raise Exception("Unable to parse both JSON via CLI arg and via STDIN.")
-        args['json'] = ''.join(sys.stdin.readlines())
-    # we got something, right?
-    if not args['json']:
-        raise Exception("No JSON given to parse.");
-    json_enc = json.JSONEncoder().encode
-    json_dec = json.JSONDecoder().decode
     try:
-        obj = json_dec(args['json']);
-        if args['extract']:
+        opts = get_opts({
+            'pairs': False,
+            'indent': 4,
+            'sort_keys': True,
+            'json': False,
+            'debug': False,
+            'quiet': False,
+            'separator': '/',
+            'json_file': None,
+            'extract': [],
+            'exclude': []
+        }, sys.argv)
+
+        # we got something, right?
+        if opts['json']:
+            json_data = opts['json']
+        elif opts['json_file']:
+            json_file = open(opts['json_file'])
+            json_data = ''.join(json_file.readlines())
+        else:
+            # try reading stdin for data
+            json_data = ''.join(sys.stdin.readlines())
+        if not json_data:
+            raise Exception("No JSON given to parse.");
+        json_enc = json.JSONEncoder().encode
+        json_dec = json.JSONDecoder().decode
+        obj = json_dec(json_data);
+        if opts['exclude']:
+            # TODO!
+            new_obj = obj.copy()
+            name_re = re.compile(r'\W+');
+            for path in opts['exclude']:
+                new_obj = exclude(
+                    obj.copy(),
+                    path.strip('/'),
+                    separator = opts['separator'],
+                    quiet = opts['quiet'],
+                    debug = opts['debug']
+                )
+                for (path, key, value) in pairs:
+                    pass
+        if opts['extract']:
             results = []
             name_re = re.compile(r'\W+');
-            for path in args['extract']:
-                if args['pairs']:
-                     pairs = extract(obj, path, pairs = True, quiet = args['quiet']);
-                     for name in pairs:
+            for path in opts['extract']:
+                pairs = extract(
+                    obj,
+                    path.strip('/'),
+                    separator = opts['separator'],
+                    quiet = opts['quiet'],
+                    debug = opts['debug']
+                )
+                for (path, key, value) in pairs:
+                    if opts['pairs']:
                         results.append("%s=%s" % (
-                            re.sub(name_re, '_', name),
-                            json.dumps(pairs[name])
+                            re.sub(name_re, '_', path),
+                            json.dumps(
+                                value,
+                                ensure_ascii = True,
+                                sort_keys = opts['sort_keys'],
+                                indent = opts['indent']
+                            )
                         ))
-                else:
-                    values = extract(obj, path, quiet = args['quiet'])
-                    for result in values:
+                    else:
                          results.append(json.dumps(
-                            result,
-                            sort_keys = True,
-                            ensure_ascii = True
+                            value,
+                            ensure_ascii = True,
+                            sort_keys = opts['sort_keys'],
+                            indent = opts['indent']
                         ))
             for result in results:
                 print result
         else:
-            # just print it back formatted
+            # just print it back formatted by default
             print json.dumps(
                 obj,
-                indent = 4,
-                sort_keys = True,
+                indent = opts['indent'],
+                sort_keys = opts['sort_keys'],
                 ensure_ascii = True
             )
     except Exception, e:

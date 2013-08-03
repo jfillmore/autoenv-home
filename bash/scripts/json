@@ -214,6 +214,7 @@ def print_obj(obj):
         sort_keys = opts['sort_keys'],
         ensure_ascii = True
     )
+
 def exclude(obj, path, separator = '/', prefix = '', quiet = False, debug = False):
     """Exclude values from an object based on a path."""
     # break the path into parts
@@ -315,7 +316,7 @@ if __name__ == '__main__':
                         obj,
                         path.strip('/'),
                         separator = opts['separator'],
-                        quiet = False,
+                        quiet = True,
                         debug = opts['debug']
                     )
                 except:

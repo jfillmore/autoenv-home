@@ -368,6 +368,9 @@ if __name__ == '__main__':
                             sort_keys = opts['sort_keys'],
                             indent = opts['indent']
                         ))
+                        # trim quotes on strings
+                        if results[-1][0] == '"':
+                            results[-1] = results[-1][1:-1]
         for result in results:
             print result
     except Exception, e:

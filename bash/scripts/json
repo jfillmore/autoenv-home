@@ -200,7 +200,7 @@ def parse_keys(obj, path, quiet = False):
         # write our path into a regex to compare against the keys
         path_re = re.compile(path)
         keys = [key for key in obj.keys() if re.match(path_re, key)]
-    if not len(keys):
+    if not len(keys) and not quiet:
         raise Exception("Path '%s' in object '%s' not found." % (
             path,
             dump_obj(obj)

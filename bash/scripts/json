@@ -192,7 +192,7 @@ def parse_keys(obj, path, quiet = False):
             if parts[1] < 0:
                 # all except last X number
                 parts[1] = objlen - abs(parts[1])
-            elif parts[1]:
+            elif parts[1] >= 0:
                 # always need one more on positive 2nd numbers
                 parts[1] = parts[1] + 1
             keys = range(parts[0], parts[1])

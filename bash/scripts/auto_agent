@@ -1,0 +1,97 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+debug() {
+    [ "$VERBOSE" -eq 1 ] && echo "+ [$@]" >&2
+}
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME
+(e.g.)
+
+OPTIONS:
+    -d|--dry-run          Do everything except start ssh-agent
+    -h|--help             This information
+    -v|--verbose          Print debugging information to stdout
+EOI
+}
+
+test_agent() {
+    ssh-add -l >/dev/null 2>/dev/null
+    # 2 = can't talk to it, 1 = cmd failed (e.g. no keys loaded, which is fine)
+    [ $? -eq 2 ] && return 1
+    return 0
+}
+
+# collect args
+# ==========================================
+
+VERBOSE=0
+DRYRUN=0
+
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in 
+        --dry-run|-d)
+            DRYRUN=1
+            ;;
+        --verbose|-v)
+            VERBOSE=1
+            ;;
+        --help|-h)
+            usage
+            exit
+            ;;
+        *)
+            fail "Invalid argument: $arg"
+    esac
+done
+
+debug "Checking to see if one is already setup"
+if env | grep -q SSH_AGENT_PID; then
+    # does it even work?
+    test_agent && {
+        debug "Existing agent already setup"
+        exit
+    }
+fi
+
+debug "Looking for existing SSH agent"
+uname=$(uname)
+if [ $uname == Linux ]; then
+    sockets=$(find /tmp/ssh-* -user $USER -name agent.\* -printf '%T@ %p\n' 2>/dev/null \
+        | sort -k 1 -nr \
+        | awk '{print $2}')
+elif [ $uname == FreeBSD ]; then
+    sockets=$(find /tmp/ssh-* -user $USER -name agent.\* -print0 2>/dev/null \
+        | xargs -0 stat -f '%B %N' \
+        | sort -k 1 -nr)
+else
+    fail "Unsupported OS: $uname"
+fi
+
+echo "$sockets" | while read socket; do
+    # test to see if the socket even works
+    export SSH_AUTH_SOCK=$socket
+    debug "Testing existing socket:\n$socket"
+    test_agent && {
+        # bugger the PID, just means 'ssh-agent -k' won't work
+        rem "Reconnecting to existing agent"
+        echo "export SSH_AUTH_SOCK=$socket"
+        exit
+    }
+done && exit
+
+# we need to start up a new agent it seems!
+debug "Starting up a new agent"
+[ $DRYRUN -eq 0 ] && ssh-agent -s
+exit

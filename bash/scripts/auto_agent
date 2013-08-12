@@ -74,18 +74,19 @@ if [ $uname == Linux ]; then
 elif [ $uname == FreeBSD ]; then
     sockets=$(find /tmp/ssh-* -user $USER -name agent.\* -print0 2>/dev/null \
         | xargs -0 stat -f '%B %N' \
-        | sort -k 1 -nr)
+        | sort -k 1 -nr \
+        | awk '{print $2}')
 else
     fail "Unsupported OS: $uname"
 fi
 
 echo "$sockets" | while read socket; do
     # test to see if the socket even works
-    export SSH_AUTH_SOCK=$socket
+    export SSH_AUTH_SOCK="$socket"
     debug "Testing existing socket:\n$socket"
     test_agent && {
         # bugger the PID, just means 'ssh-agent -k' won't work
-        rem "Reconnecting to existing agent"
+        debug "Reconnecting to existing agent"
         echo "export SSH_AUTH_SOCK=$socket"
         exit
     }

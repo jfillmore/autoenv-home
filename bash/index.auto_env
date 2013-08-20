@@ -1,5 +1,6 @@
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
 1  35744b43c02c5a5fd27bd4872dde54e984552169  ./scripts/dimmer
+1  cf6e2fd22d33d1528f96d435678cd00f47123c06  ./scripts/battery_test
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  f0c7a0b8b5333bdf0aacb2c7152659c90c97b96b  ./scripts/auto_agent
 1  ff28884fc2e38cdae8f92c8a25ac047f9bc65276  ./scripts/ssh_tun

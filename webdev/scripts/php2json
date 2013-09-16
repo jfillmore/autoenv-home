@@ -1,0 +1,25 @@
+#!/usr/bin/php
+<?php
+
+function fail($msg) {
+    file_put_contents(
+        'php://stderr',
+        $msg . "\n"
+    );
+    exit(1);
+}
+
+if (count($argv) != 2) {
+    fail("Missing filename to convert.");
+}
+$file = $argv[1];
+if (! file_exists($file)) {
+    fail("File not found: '$file'.");
+}
+$obj = unserialize(file_get_contents($file));
+if ($obj === false) {
+    fail("Failed to unserialize '$file'.");
+}
+file_put_contents($file, json_encode($obj));
+exit();
+

@@ -1,25 +1,92 @@
 #!/usr/bin/php
 <?php
 
-function fail($msg) {
-    file_put_contents(
+// make sure errors/etc spill out
+ini_set('display_errors', true);
+ini_set('error_reporting', E_ALL);
+
+function usage() {
+    @file_put_contents(
         'php://stderr',
-        $msg . "\n"
+        'usage: php2json [ARGS]
+Convert serialized PHP to JSON, optionally rewriting the file.
+
+GENERAL ARGS:
+    -f|--file FILE     File to parse.
+    -d|--dryrun        Do not perform audits; instead return list of customer IDs that would have been audited.
+    -e|--edit          Edit the file in-place instead of printing it to standard out.
+    -h|--help          This information.
+'
     );
-    exit(1);
 }
 
-if (count($argv) != 2) {
-    fail("Missing filename to convert.");
+function fail($error = null, $die = true) {
+    if ($error) {
+        if (is_array($error)) {
+            $error = json_encode($error);
+        }
+        @file_put_contents('php://stderr', $error . "\n");
+    }
+    if ($die) {
+        exit(1);
+    }
 }
-$file = $argv[1];
-if (! file_exists($file)) {
-    fail("File not found: '$file'.");
+
+// collect args
+//---------------------
+$args = array(
+    'file' => null,
+    'dryrun' => false,
+    'edit' => false
+);
+$opts = getopt('f:de', array(
+    'file',
+    'dryrun',
+    'edit'
+));
+if (isset($opts['help']) || isset($opts['h'])) {
+    usage();
+    exit(0);
 }
-$obj = unserialize(file_get_contents($file));
+if (@$opts['file']) {
+    $args['file'] = $opts['file'];
+} else if (@$opts['f']) {
+    $args['file'] = $opts['f'];
+}
+if (isset($opts['edit']) || isset($opts['e'])) {
+    $args['edit'] = true;
+}
+
+// gather PHP obj via a file or stdin
+//---------------------
+if ($args['file']) {
+    if (! file_exists($args['file'])) {
+        fail("File not found: '{$args['file']}'.");
+    }
+    $php = file_get_contents($args['file']);
+} else {
+    if ($args['edit']) {
+        fail("Unable to edit serialized PHP provided via stdin.");
+    }
+    $php = file_get_contents('php://stdin');
+    if ($php === '') {
+        fail("No serialized PHP given via stdin or any file specified.");
+    }
+}
+
+// and do the work to convert and output JSON
+//---------------------
+$obj = unserialize($php);
 if ($obj === false) {
-    fail("Failed to unserialize '$file'.");
+    fail("Failed to unserialize '{$args['file']}'.");
 }
-file_put_contents($file, json_encode($obj));
+$json = json_encode($obj);
+if ($args['edit']) {
+    if (! file_put_contents($args['file'], $json)) {
+        fail("Failed to save JSON to '{$args['file']}");
+    }
+} else {
+    echo $json . "\n";
+}
 exit();
 

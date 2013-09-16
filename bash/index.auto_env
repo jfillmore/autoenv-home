@@ -3,7 +3,7 @@
 1  cf6e2fd22d33d1528f96d435678cd00f47123c06  ./scripts/battery_test
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  f0c7a0b8b5333bdf0aacb2c7152659c90c97b96b  ./scripts/auto_agent
-1  ff28884fc2e38cdae8f92c8a25ac047f9bc65276  ./scripts/ssh_tun
+1  dfcf24403de8f572a7cce820ae33f505811276ae  ./scripts/ssh_tun
 1  b85e1782e066ffebbdb4b7f3dca000bf4eeda886  ./scripts/ansi_colors
 1  453f9be686b18e20d0f1ed9042232a62a47415c6  ./scripts/json
-0  1e9fec26e5f2563ff8737a354a75638c8536a3ee  ./.bashrc
+0  03aeaa2abd585ddfa21ef25c5a5ea64914604421  ./.bashrc

@@ -8,12 +8,21 @@ fail() {
 	exit 1
 }
 
+ssh_args() {
+    args="-o StrictHostKeyChecking=no
+		-o ConnectTimeout=$SSH_TIMEOUT
+		-o TCPKeepAlive=yes
+		-o ServerAliveInterval=$SSH_KEEPALIVE
+		-p $SSH_PORT"
+    # the key might already just be cached in the ssh-agent
+    [ -n "$SSH_KEY" ] && args="$args -i '$SSH_KEY'"
+    echo "$args"
+}
+
 test_ssh() {
+    local args="$(ssh_args)"
 	ssh \
-		-o StrictHostKeyChecking=no \
-		-o ConnectTimeout=$SSH_TIMEOUT \
-		-p $SSH_PORT \
-		-i $SSH_KEY \
+        $args \
 		$SSH_USER@$SSH_HOST \
 		"$@"
 }
@@ -24,15 +33,11 @@ test_tun() {
 }
 
 tunnel() {
-    cmd=ssh
+    local cmd=ssh
+    local args="$(ssh_args)"
     [ $DRYRUN -eq 1 -a $VERBOSE -eq 1 ] && cmd="echo $cmd"
 	$cmd \
-		-o StrictHostKeyChecking=no \
-		-o ConnectTimeout=$SSH_TIMEOUT \
-		-o TCPKeepAlive=yes \
-		-o ServerAliveInterval=$SSH_KEEPALIVE \
-		-p $SSH_PORT \
-		-i $SSH_KEY \
+        $args \
 		-N \
 		$SSH_USER@$SSH_HOST \
 		-L "$1" \
@@ -134,17 +139,22 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# is the SSH key found and host reachable?
-[ "$SSH_KEY" -a -f "$SSH_KEY" ] \
-    || fail "Unable to locate SSH key file '$SSH_KEY'."
-debug "Testing SSH ($SSH_USER@$SSH_HOST:$SSH_PORT)"
-ssh-agent -k &>/dev/null
-eval `ssh-agent -s` &>/dev/null
-ssh-add "$SSH_KEY" 2>/dev/null
-whoami=$(test_ssh whoami) \
-    || fail "Failed to connect to $SSH_HOST."
-if [ "$whoami" != "$SSH_USER" ]; then
-	fail "Got '$whoami' back from SSH test, but $SSH_USER was expected."
+if [ -n "$SSH_KEY" ]; then
+    # is the SSH key found?
+    [ -f "$SSH_KEY" ] || fail "Unable to locate SSH key file '$SSH_KEY'."
+    # add our key to an SSH agent
+    eval `~/scripts/auto_agent` &>/dev/null
+    ssh-add "$SSH_KEY" 2>/dev/null
+fi
+
+if [ $DRYRUN -eq 2 ]; then
+    # the remote host is reachable, right?
+    debug "Testing SSH ($SSH_USER@$SSH_HOST:$SSH_PORT)"
+    whoami=$(test_ssh whoami) \
+        || fail "Failed to connect to $SSH_HOST."
+    if [ "$whoami" != "$SSH_USER" ]; then
+        fail "Got '$whoami' back from SSH test, but $SSH_USER was expected."
+    fi
 fi
 
 # and now off to the races
@@ -154,9 +164,17 @@ for tunnel in $SSH_TUNNELS; do
         debug "Local port $local_port is already open"
     else
         remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
-        debug "Tunneling localhost:$local_port => $remote_host"
         tunnel $tunnel \
             || fail "Failed to create SSH tunnel '$tunnel'"
+        # we might have got password prompts back... did we REALLY create it?
+        tun_pid=$!
+        debug "Tunneling localhost:$local_port => $remote_host (PID: $tun_pid)"
+        # wait a moment and verify that it worked... QQ at the delay
+        sleep 2
+        [ $DRYRUN -eq 0 ] && {
+            test_tun $local_port \
+                || fail "Failed to verify SSH tunnel '$tunnel' -- check for auth errors."
+        }
     fi
 done
 

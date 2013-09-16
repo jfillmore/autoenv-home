@@ -65,6 +65,7 @@ if [[ "$-" =~ 'i' ]]; then
     alias jdiff="diff -yb --suppress-common-lines"
     alias ssh='ssh -o TCPKeepAlive=yes -o ServerAliveInterval=90'
     alias swp_vim="for file in \$(find -iname .\*.swp); do vim -r "\$file" && rm "\$file"; done"
+    alias halt='poweroff'
 
     if [ -d $HOME/scripts ]; then
         PATH="$PATH:$HOME/scripts"

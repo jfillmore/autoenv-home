@@ -13,7 +13,7 @@ Convert serialized PHP to JSON, optionally rewriting the file.
 
 GENERAL ARGS:
     -f|--file FILE     File to parse.
-    -d|--dryrun        Do not perform audits; instead return list of customer IDs that would have been audited.
+    -d|--dryrun        Do not perform edits if requested; instead JSON will be printed to STDOUT.
     -e|--edit          Edit the file in-place instead of printing it to standard out.
     -h|--help          This information.
 '
@@ -81,7 +81,7 @@ if ($obj === false) {
     fail("Failed to unserialize '{$args['file']}'.");
 }
 $json = json_encode($obj);
-if ($args['edit']) {
+if ($args['edit'] && ! $args['dryrun']) {
     if (! file_put_contents($args['file'], $json)) {
         fail("Failed to save JSON to '{$args['file']}");
     }

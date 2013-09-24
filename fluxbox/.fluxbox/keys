@@ -69,8 +69,8 @@ Mod1 F2 :Exec fbrun
 121 :Exec amixer sset Master,0 toggle
 
 # brightness controls
-None XF86MonBrightnessUp :Exec sudo ~jkf/scripts/dimmer +20
-None XF86MonBrightnessDown :Exec sudo ~jkf/scripts/dimmer -20
+None XF86MonBrightnessUp :Exec sudo ~jkf/scripts/dimmer +10
+None XF86MonBrightnessDown :Exec sudo ~jkf/scripts/dimmer -10
 
 # current window commands
 Mod1 F4 :Close

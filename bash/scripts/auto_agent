@@ -67,11 +67,11 @@ fi
 
 debug "Looking for existing SSH agent"
 uname=$(uname)
-if [ $uname == Linux ]; then
+if [ "$uname" = 'Linux' ]; then
     sockets=$(find /tmp/ssh-* -user $USER -name agent.\* -printf '%T@ %p\n' 2>/dev/null \
         | sort -k 1 -nr \
         | awk '{print $2}')
-elif [ $uname == FreeBSD ]; then
+elif [ "$uname" = 'FreeBSD' ]; then
     sockets=$(find /tmp/ssh-* -user $USER -name agent.\* -print0 2>/dev/null \
         | xargs -0 stat -f '%B %N' \
         | sort -k 1 -nr \

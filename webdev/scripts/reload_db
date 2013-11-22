@@ -1,0 +1,118 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+    echo "! $@" >&2
+    exit 1
+}
+
+clean_die() {
+    [ -f "$tmp_file" ] && rm -f "$tmp_file"
+    fail "$@"
+}
+
+usage() {
+    cat <<- EOI
+    usage: $SCRIPT_NAME DB_NAME [args]
+Reload the specified database based on the given SQL schema file. If a failure occurs the old database contents will be saved as "\$DB_NAME-dump.sql.\$PID" in the working directory.
+
+    arguments:
+        -h|--help|-H      This information.
+        -s|--schema FILE  Schema file (default: "schema.sql" in PWD)
+        -x|--no-data      Do not dump or restore data.
+        -r|--reload-db    Drop and recreate database before reloading.
+        -v|--verbose      Print verbose debugging information to standard error.
+EOI
+}
+
+function query() {
+    local query="$@"
+    mysql --skip-column-names -s -D $db_name -e "$@" \
+        || fail "Failed to execute SQL query $query."
+}
+
+debug() {
+    [ $verbose -eq 1 ] && echo -e "+ [$@]" >&2
+}
+
+save_die() {
+    if [ $no_data -eq 0 ]; then
+        echo "Saving old data as '$oh_crap_file'." >&2
+        mv "$tmp_file" "$oh_crap_file"
+    fi
+    fail "$@"
+}
+
+db_name=""
+schema_file="schema.sql"
+verbose=0
+no_data=0
+reload_db=0
+
+# arg collection!
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in
+        -h|--help|-H)
+            usage
+            exit
+            ;;
+        -x|--no-data)
+            no_data=1
+            ;;
+        -r|--reload-db)
+            reload_db=1
+            ;;
+        -v|--verbose)
+            verbose=1
+            ;;
+        -s|--schema)
+            schema_file="$arg"
+            ;;
+        *)
+            if [ -z $db_name ]; then
+                db_name="$arg"
+            else
+                fail "Database name of $db_name already given."
+            fi
+            ;;
+    esac
+done
+tmp_file=".$db_name.sql.$$"
+oh_crap_file="$db_name-dump.sql.$$"
+
+# sanity check
+[ -f "$schema_file" ] \
+    || fail "Failed to locate schema file '$schema_file."
+
+# action!
+if [ $no_data -eq 0 ]; then
+    debug "Dumping '$db_name' to '$tmp_file'"
+    mysqldump -nt "$db_name" > "$tmp_file" \
+        || clean_die "Failed to export existing data to $tmp_file"
+fi
+
+if [ $reload_db -eq 1 ]; then
+    debug "Reloading database '$db_name'["
+    # it may not exist for some reason, so just ignore that
+    mysql -s -e "DROP DATABASE \`$db_name\`" &>/dev/null 
+    mysql -s -e "CREATE DATABASE \`$db_name\`" \
+        || clean_die "Failed to create database '$db_name'."
+fi
+
+debug "Importing schema from '$schema_file'"
+mysql -D "$db_name" < "$schema_file" \
+    || save_die "Failed to import new schema."
+
+
+if [ $no_data -eq 0 ]; then
+    debug "Importing old data from '$tmp_file'"
+    mysql -D "$db_name" < "$tmp_file" \
+        || save_die "Failed to import old data."
+    rm "$tmp_file"
+fi
+
+exit 0

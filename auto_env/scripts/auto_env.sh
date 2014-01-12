@@ -188,7 +188,7 @@ if [ $action = 'index' ]; then
         cd "$dir" || fail "Failed to change to '$dir'."
         # generate checksums for everything in here
         # don't overwrite the existing index until we are done
-        find ./ -type f -print0 | xargs -0 $shasum > .index.auto_env.$$
+        find . -type f -print0 | xargs -0 $shasum > .index.auto_env.$$
         if [ $? -ne 0 ]; then
             rm .index.auto_env.$$ &>/dev/null
             fail "Failed to generate checksum list for directory '$dir'."
@@ -204,7 +204,7 @@ if [ $action = 'index' ]; then
             fi
             if [ $skip -eq 0 ]; then
                 # figure out which were executable files
-                name=$(find "$path" -perm /1 -type f)
+                name=$(find "$path" -type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \))
                 if [ ${#name} -ne 0 ]; then
                     exec_bit=1
                     scripts=$((scripts + 1))

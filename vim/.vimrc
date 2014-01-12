@@ -7,6 +7,7 @@ set incsearch
 set cursorline
 set guioptions-=m
 set guioptions-=T
+set ruler
 
 "set number
 

@@ -1,7 +1,7 @@
-1  331efeca4d50383cf8366f22a0d1020544b59c57  ./scripts/sanity_check
-1  78073bfc7f1c1bc65fd798b057731e3e7b9f5fbe  ./scripts/reload_db
-1  e0871511b763d32d043813c7ac1293a7e639f874  ./scripts/php2json
-0  3e517ffcdc88e551c5dccd74e3bd437c81643793  ./scripts/jslint.js
-1  073c4912b3464403eb4a8d6014994da5e2f3b587  ./scripts/socket_test.pl
 1  8dd8b525a86dffaff819b713be11a8b1050eadcb  ./scripts/git_stats.sh
+0  3e517ffcdc88e551c5dccd74e3bd437c81643793  ./scripts/jslint.js
 1  46312f2303299b02885555b4e5f70b01589e9e4d  ./scripts/json
+1  e0871511b763d32d043813c7ac1293a7e639f874  ./scripts/php2json
+1  78073bfc7f1c1bc65fd798b057731e3e7b9f5fbe  ./scripts/reload_db
+1  331efeca4d50383cf8366f22a0d1020544b59c57  ./scripts/sanity_check
+1  073c4912b3464403eb4a8d6014994da5e2f3b587  ./scripts/socket_test.pl

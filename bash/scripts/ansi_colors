@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo '                              \033[#;#;#m                           '
 for attr in 0 1 4 5 7 8; do

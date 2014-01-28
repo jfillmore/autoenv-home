@@ -80,17 +80,19 @@ else
     fail "Unsupported OS: $uname"
 fi
 
-echo "$sockets" | while read socket; do
-    # test to see if the socket even works
-    export SSH_AUTH_SOCK="$socket"
-    debug "Testing existing socket:\n$socket"
-    test_agent && {
-        # bugger the PID, just means 'ssh-agent -k' won't work
-        debug "Reconnecting to existing agent"
-        echo "export SSH_AUTH_SOCK=$socket"
-        exit
-    }
-done && exit
+if [ -n "$sockets" ]; then
+    echo "$sockets" | while read socket; do
+        # test to see if the socket even works
+        export SSH_AUTH_SOCK="$socket"
+        debug "Testing existing socket:\n$socket"
+        test_agent && {
+            # bugger the PID, just means 'ssh-agent -k' won't work
+            debug "Reconnecting to existing agent"
+            echo "export SSH_AUTH_SOCK=$socket"
+            exit
+        }
+    done && exit
+fi
 
 # we need to start up a new agent it seems!
 debug "Starting up a new agent"

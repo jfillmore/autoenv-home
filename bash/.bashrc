@@ -77,10 +77,15 @@ if [[ "$-" =~ 'i' ]]; then
     export HISTSIZE=100000
 
     unset PROMPT_COMMAND
-    setPrompt "${HOSTNAME%%.*}" 
+    #setPrompt "${HOSTNAME%%.*}" 
 
     if [ -f "$HOME/.bashrc.local" ]; then
         . "$HOME/.bashrc.local"
+    fi
+    if [ -d "$HOME/.bashrc.d" ]; then
+        for file in "$HOME/.bashrc.d/"*; do
+            . "$file"
+        done
     fi
 fi
 

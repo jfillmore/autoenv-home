@@ -21,6 +21,11 @@ OPTIONS:
     -d|--dry-run          Do everything except start ssh-agent
     -h|--help             This information
     -v|--verbose          Print debugging information to stdout
+
+EXAMPLE:
+
+  \$ eval \$($SCRIPT_NAME)
+  Agent pid 1859
 EOI
 }
 

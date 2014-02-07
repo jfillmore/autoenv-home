@@ -1,6 +1,6 @@
-0  03aeaa2abd585ddfa21ef25c5a5ea64914604421  ./.bashrc
+0  02f974885a8335c33ea9545331a88dd87667f4fe  ./.bashrc
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
-1  875d9f6bb4128b3bd0886ac4da83ab97361c37cc  ./scripts/auto_agent
+1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
 1  dfcf24403de8f572a7cce820ae33f505811276ae  ./scripts/ssh_tun

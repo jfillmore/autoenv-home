@@ -251,8 +251,11 @@ elif [ "$action" = 'sync' ]; then
         # download all the files listed
         while read exec_bit checksum path; do
             rem "- fetching file '$path'"
-            base_dir=$(dirname "$path" | sed 's/^[\./]*//') \
+            base_dir=$(dirname "$path" | sed 's/^\.\///') \
                 || fail "Failed to get base directory of '$path'."
+            if [ -z "$base_dir" ]; then
+                base_dir=.
+            fi
             file_name=$(basename "$path") \
                 || fail "Failed to get file name of '$path'."
             $HTTP_AGENT "$auto_env_url/$target/$path" \
@@ -281,6 +284,8 @@ elif [ "$action" = 'sync' ]; then
                         rem "-- skipping unchanged file"
                         file_changed=0
                     fi
+                else
+                    rem "-- checksum mismatch: old=$old_checksum, new=$checksum"
                 fi
                 # regardless of the file changed make sure the exec bit is set right
                 if [ $file_changed -eq 0 \

@@ -211,7 +211,7 @@ if [ $action = 'index' ]; then
                 else 
                     exec_bit=0
                 fi
-                echo "$exec_bit  $checksum  "$(echo "$path" | sed 's/^[\./]*//')
+                echo "$exec_bit  $checksum  "$(echo "$path" | sed 's/^\.\///')
             fi
         done < .index.auto_env.$$ > .index.auto_env.$$.done
         if [ $? -ne 0 ]; then

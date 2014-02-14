@@ -211,7 +211,7 @@ if [ $action = 'index' ]; then
                 else 
                     exec_bit=0
                 fi
-                echo "$exec_bit  $checksum  $path"
+                echo "$exec_bit  $checksum  "$(echo "$path" | sed 's/^[\./]*//')
             fi
         done < .index.auto_env.$$ > .index.auto_env.$$.done
         if [ $? -ne 0 ]; then
@@ -251,7 +251,7 @@ elif [ "$action" = 'sync' ]; then
         # download all the files listed
         while read exec_bit checksum path; do
             rem "- fetching file '$path'"
-            base_dir=$(dirname "$path") \
+            base_dir=$(dirname "$path" | sed 's/^[\./]*//') \
                 || fail "Failed to get base directory of '$path'."
             file_name=$(basename "$path") \
                 || fail "Failed to get file name of '$path'."

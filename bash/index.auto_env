@@ -1,6 +1,7 @@
-0  df96895c011c9d5ab73ad0cdaddc77da6d624ff2  ./.bashrc
-1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
-1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
-1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
-1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
-1  dfcf24403de8f572a7cce820ae33f505811276ae  ./scripts/ssh_tun
+0  df96895c011c9d5ab73ad0cdaddc77da6d624ff2  bashrc
+1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  scripts/ansi_colors
+1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  scripts/auto_agent
+1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  scripts/frequency
+0  f3c3d591e41708f4235d5efdd160090bbc999978  scripts/init_env
+1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  scripts/rpass
+1  dfcf24403de8f572a7cce820ae33f505811276ae  scripts/ssh_tun

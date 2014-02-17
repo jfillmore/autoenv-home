@@ -1,0 +1,55 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+rem() {
+    [ "$VERBOSE" -eq 1 ] && echo "+ [$@]" >&2
+}
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME [ARGUMENTS]
+(e.g.)
+
+OPTIONS:
+    -d|--dry-run          Run without making any changes
+    -h|--help             This information
+    -v|--verbose          Print debugging information to stdout
+
+EXAMPLE:
+
+  \$ $SCRIPT_NAME
+EOI
+}
+
+# collect args
+# ==========================================
+
+VERBOSE=0
+DRYRUN=0
+
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in 
+        --dry-run|-d)
+            DRYRUN=1
+            ;;
+        --verbose|-v)
+            VERBOSE=1
+            ;;
+        --help|-h)
+            usage
+            exit
+            ;;
+        *)
+            fail "Invalid argument: $arg"
+    esac
+done
+

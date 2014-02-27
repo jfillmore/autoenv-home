@@ -198,8 +198,8 @@ if [ $action = 'index' ]; then
         scripts=0 # out of curiosity, how many were scripts?
         while read checksum path; do
             skip=0
-            # don't include our own checksum files in the index, or swap files
-            if echo "$path" | grep -qE '^(.*/\..*\.sw.|\.\/\.?index\.auto_env(\.[0-9]+)?)$'; then
+            # don't include our own checksum files in the index, swap files, git stuff, etc
+            if echo "$path" | grep -qE '^(.*/\..*\.sw.|.*\/\.git.*|\.\/\.?index\.auto_env(\.[0-9]+)?)$'; then
                 skip=1
             fi
             if [ $skip -eq 0 ]; then

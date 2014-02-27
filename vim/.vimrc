@@ -46,6 +46,12 @@ let @t = 'ddnVnxnz.'
 " git conflict - keep bottom portion of conflict
 let @b = 'Vnxnddnz.'
 
+" --- Plugins ---
+filetype off
+execute pathogen#infect()
+call pathogen#helptags()
+filetype plugin indent on
+
 " --- Style ---
 syntax on
 colorscheme jonny

@@ -151,7 +151,7 @@ call pymode#default('g:pymode_rope', 1)
 call pymode#default('g:pymode_rope_current', '')
 
 " If project hasnt been finded in current working directory, look at parents directory
-call pymode#default('g:pymode_rope_lookup_project', 1)
+call pymode#default('g:pymode_rope_lookup_project', 0)
 
 " Enable Rope completion
 call pymode#default('g:pymode_rope_completion', 1)
@@ -228,7 +228,7 @@ call pymode#default('g:pymode_rope_change_signature_bind', '<C-c>rs')
 call pymode#default('g:pymode_rope_use_function_bind', '<C-c>ru')
 
 " Regenerate project cache on every save
-call pymode#default('g:pymode_rope_regenerate_on_write', 1)
+call pymode#default('g:pymode_rope_regenerate_on_write', 0)
 
 " }}}
 

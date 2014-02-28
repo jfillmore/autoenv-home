@@ -1,3 +1,9 @@
+" --- Plugins ---
+filetype off
+execute pathogen#infect()
+call pathogen#helptags()
+filetype plugin indent on
+
 " --- General ---
 set nocompatible
 set viminfo='20,\"50
@@ -8,6 +14,7 @@ set cursorline
 set guioptions-=m
 set guioptions-=T
 set ruler
+set wrap
 
 "set number
 
@@ -45,12 +52,6 @@ let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)'
 let @t = 'ddnVnxnz.'
 " git conflict - keep bottom portion of conflict
 let @b = 'Vnxnddnz.'
-
-" --- Plugins ---
-filetype off
-execute pathogen#infect()
-call pathogen#helptags()
-filetype plugin indent on
 
 " --- Style ---
 syntax on

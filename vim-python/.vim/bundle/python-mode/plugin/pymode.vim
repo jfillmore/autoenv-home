@@ -90,7 +90,7 @@ call pymode#default('g:pymode_lint_async_updatetime', 1000)
 call pymode#default("g:pymode_lint_on_write", 1)
 
 " Check code every save (every)
-call pymode#default("g:pymode_lint_unmodified", 0)
+call pymode#default("g:pymode_lint_unmodified", 1)
 
 " Check code on fly
 call pymode#default("g:pymode_lint_on_fly", 0)

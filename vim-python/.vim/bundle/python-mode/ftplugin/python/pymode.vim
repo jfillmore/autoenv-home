@@ -55,7 +55,7 @@ if g:pymode_options
     if v:version > 702 && !&relativenumber
         setlocal number
     endif
-    setlocal nowrap
+    setlocal wrap
     setlocal textwidth=79
     setlocal commentstring=#%s
     setlocal define=^\s*\\(def\\\\|class\\)

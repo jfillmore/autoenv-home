@@ -145,7 +145,7 @@ call pymode#default('g:pymode_breakpoint_cmd', '')
 " ROPE (refactoring, codeassist) {{{
 "
 " Rope support
-call pymode#default('g:pymode_rope', 1)
+call pymode#default('g:pymode_rope', 0)
 
 " System plugin variable
 call pymode#default('g:pymode_rope_current', '')

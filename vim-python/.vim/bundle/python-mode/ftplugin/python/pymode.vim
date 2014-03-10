@@ -52,9 +52,9 @@ endif
 if g:pymode_options
     setlocal complete+=t
     setlocal formatoptions-=t
-    if v:version > 702 && !&relativenumber
-        setlocal number
-    endif
+    "if v:version > 702 && !&relativenumber
+        "setlocal number
+    "endif
     setlocal wrap
     setlocal textwidth=79
     setlocal commentstring=#%s

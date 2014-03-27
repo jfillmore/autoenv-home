@@ -51,12 +51,12 @@ done
 
 # generate the padding requested
 if [ $use_tabs -eq 0 ]; then
-    # default to 1 tab
-    [ $pad_width -eq 0 ] && pad_width=1
-    padding=$(printf "%${pad_width}s")
-else
     # default to 4 spaces
     [ $pad_width -eq 0 ] && pad_width=4
+    padding=$(printf "%${pad_width}s")
+else
+    # default to 1 tab
+    [ $pad_width -eq 0 ] && pad_width=1
     padding=''
     for ((i=0; i<$pad_width; i++)); do
         padding="	$padding"

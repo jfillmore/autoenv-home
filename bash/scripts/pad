@@ -1,0 +1,70 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME [PADDING] [OPTIONS]
+
+Pad stdin with the specified number of spaces or tabs. Defaults to 4 spaces.
+
+OPTIONS:
+    -t|--tabs         Use tabs instead of spaces
+    -h|--help         This information
+
+EXAMPLE:
+
+  \$ cat /some/file | $SCRIPT_NAME 2
+EOI
+}
+
+
+# collect args
+# ==========================================
+
+pad_width=0
+use_tabs=0
+verbose=0
+
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in 
+        --tabs|-t)
+            use_tabs=1
+            ;;
+        --verbose|-v)
+            verbose=1
+            ;;
+        --help|-h)
+            usage
+            exit
+            ;;
+        *)
+            pad_width="$arg"
+            ;;
+    esac
+done
+
+
+# generate the padding requested
+if [ $use_tabs -eq 0 ]; then
+    # default to 1 tab
+    [ $pad_width -eq 0 ] && pad_width=1
+    padding=$(printf "%${pad_width}s")
+else
+    # default to 4 spaces
+    [ $pad_width -eq 0 ] && pad_width=4
+    padding=''
+    for ((i=0; i<$pad_width; i++)); do
+        padding="	$padding"
+    done
+fi
+
+# and make it so!
+if [ $verbose -eq 1 ]; then
+    echo "[padding: $pad_width (tabs: $use_tabs) = >$padding<]" >&2
+fi
+sed "s/^/$padding/g"

@@ -48,16 +48,16 @@ call pymode#default("g:pymode_trim_whitespaces", 1)
 " Set recomended python options
 call pymode#default("g:pymode_options", 1)
 
-" Minimal height of pymode quickfix window
-call pymode#default('g:pymode_quickfix_maxheight', 6)
-
 " Maximal height of pymode quickfix window
+call pymode#default('g:pymode_quickfix_maxheight', 7)
+
+" Minimal height of pymode quickfix window
 call pymode#default('g:pymode_quickfix_minheight', 3)
 
 " LOAD VIRTUALENV {{{
 "
 " Enable virtualenv support
-call pymode#default('g:pymode_virtualenv', 1)
+call pymode#default('g:pymode_virtualenv', 0)
 
 " Get path to virtualenv (by default take from shell)
 call pymode#default('g:pymode_virtualenv_path', $VIRTUAL_ENV)

@@ -9,10 +9,7 @@ function psuc {
 }
 
 function setPrompt {
-    echo -en "\e]2;$@\a"
-    if [ "$TERM" == "Eterm" ]; then
-        echo -en "\e]1;$@\a"
-    fi
+    echo -n -e "\033]0;$@\007"
 }
 
 function grim {
@@ -52,7 +49,7 @@ if [[ "$-" =~ 'i' ]]; then
     #set -o vi
 
     alias jscc='java -jar $HOME/scripts/compiler.jar'
-    alias ls="ls --color=auto"
+    alias ls="ls -G"
     if [ $UID -eq 0 ]; then
         alias l="ls -la"
         export PS1="\[\033[1;37m\][\[\033[1;33m\]\h \[\033[1;34m\]\w\[\033[1;37m\]]#\[\033[0m\] "
@@ -77,15 +74,17 @@ if [[ "$-" =~ 'i' ]]; then
     export HISTSIZE=100000
 
     unset PROMPT_COMMAND
-    #setPrompt "${HOSTNAME%%.*}" 
+    setPrompt "${HOSTNAME%%.*}" 
 
     if [ -f "$HOME/.bashrc.local" ]; then
         . "$HOME/.bashrc.local"
     fi
-    if [ -d "$HOME/.bashrc.d" ]; then
-        for file in "$HOME/.bashrc.d/"*; do
-            . "$file"
-        done
+    if [ -d "$HOME/.bashrc.d/" ]; then
+        files=$(find "$HOME/.bashrc.d/" -type f -maxdepth 1)
+        if [ ${#files} -gt 1 ]; then
+            for file in $files; do
+                . "$file"
+            done
+        fi
     fi
 fi
-

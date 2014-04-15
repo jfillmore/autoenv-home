@@ -38,7 +38,7 @@ fixdel
 
 " --- Shortcuts ---
 " make it easy to paste formatted text
-noremap <F4> :set autoindent!<CR>:set smartindent!<CR>
+noremap <F4> :set paste!<CR>
 " show/hide line numbers
 noremap <F5> :set number!<CR>
 " show/hide search highlighting

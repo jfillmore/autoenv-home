@@ -28,6 +28,15 @@ EXAMPLE:
 EOI
 }
 
+cmd() {
+    if [ $DRYRUN -eq 1 ]; then
+        echo "# $@"
+    else
+        $@
+        [ $VERBOSE -eq 1 ] && echo "> $@" >&2
+    fi
+}
+
 # collect args
 # ==========================================
 
@@ -50,6 +59,7 @@ while [ $# -gt 0 ]; do
             ;;
         *)
             fail "Invalid argument: $arg"
+            ;;
     esac
 done
 

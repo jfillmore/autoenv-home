@@ -1,5 +1,6 @@
-0  3432050a326c5476fc85b6fc71b2136e405bb402  .bashrc
-1  eb616d30fc01f7f76901a34486b1d89bb681372b  scripts/.template
+0  588d719e7a7afb34a62372a724a4d08fc424e259  .bashrc
+0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  scripts/.init
+1  1573cdd347654b922ca435ad40a1097b96a65c48  scripts/.template
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  scripts/auto_agent
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  scripts/frequency

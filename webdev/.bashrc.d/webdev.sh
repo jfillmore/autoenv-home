@@ -1,6 +1,7 @@
 egrim() {
-    [ $# -gt 2 ] || {
+    [ $# -eq 2 ] || {
         echo "usage: egrim FILE_GLOB STRING"
+        return 1
     }
     local file ext="$1"
     shift

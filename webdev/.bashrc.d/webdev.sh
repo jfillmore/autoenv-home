@@ -7,7 +7,7 @@ egrim() {
     shift
     vim $(
         find ./ -name "$ext" | while read file; do
-            grep -Hn "$@" $file \
+            grep -Hn "$2" "$file" \
                 | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u
         done
     )

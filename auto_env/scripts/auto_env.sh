@@ -12,7 +12,7 @@ TMP_DIR="$HOME/.$SCRIPT_NAME"
 
 # specified in arguments
 #auto_env_url="https://localhost/auto_env"
-auto_env_url="https://raw.github.com/jfillmore/auto_env/master/"
+auto_env_url="https://raw.githubusercontent.com/jfillmore/auto_env/master"
 verbose=0
 force=0
 action=''
@@ -198,8 +198,8 @@ if [ $action = 'index' ]; then
         scripts=0 # out of curiosity, how many were scripts?
         while read checksum path; do
             skip=0
-            # don't include our own checksum files in the index, swap files, git stuff, etc
-            if echo "$path" | grep -qE '^(.*/\..*\.sw.|.*\/\.git.*|\.\/\.?index\.auto_env(\.[0-9]+)?)$'; then
+            # don't include our own checksum files in the index, or swap files
+            if echo "$path" | grep -qE '^(.*/\..*\.sw.|\.\/\.?index\.auto_env(\.[0-9]+)?)$'; then
                 skip=1
             fi
             if [ $skip -eq 0 ]; then
@@ -211,7 +211,7 @@ if [ $action = 'index' ]; then
                 else 
                     exec_bit=0
                 fi
-                echo "$exec_bit  $checksum  "$(echo "$path" | sed 's/^\.\///')
+                echo "$exec_bit  $checksum  $path"
             fi
         done < .index.auto_env.$$ > .index.auto_env.$$.done
         if [ $? -ne 0 ]; then
@@ -251,11 +251,8 @@ elif [ "$action" = 'sync' ]; then
         # download all the files listed
         while read exec_bit checksum path; do
             rem "- fetching file '$path'"
-            base_dir=$(dirname "$path" | sed 's/^\.\///') \
+            base_dir=$(dirname "$path") \
                 || fail "Failed to get base directory of '$path'."
-            if [ -z "$base_dir" ]; then
-                base_dir=.
-            fi
             file_name=$(basename "$path") \
                 || fail "Failed to get file name of '$path'."
             $HTTP_AGENT "$auto_env_url/$target/$path" \
@@ -284,8 +281,6 @@ elif [ "$action" = 'sync' ]; then
                         rem "-- skipping unchanged file"
                         file_changed=0
                     fi
-                else
-                    rem "-- checksum mismatch: old=$old_checksum, new=$checksum"
                 fi
                 # regardless of the file changed make sure the exec bit is set right
                 if [ $file_changed -eq 0 \

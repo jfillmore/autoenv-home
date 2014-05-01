@@ -251,6 +251,8 @@ elif [ "$action" = 'sync' ]; then
         # download all the files listed
         while read exec_bit checksum path; do
             rem "- fetching file '$path'"
+            # normalize the path to clean extra slashes, preceding periods
+            path=$(echo $path | sed 's#//*#/#g' | sed 's#^\./##')
             base_dir=$(dirname "$path") \
                 || fail "Failed to get base directory of '$path'."
             file_name=$(basename "$path") \

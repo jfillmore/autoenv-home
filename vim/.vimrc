@@ -2,7 +2,8 @@
 filetype off
 execute pathogen#infect()
 call pathogen#helptags()
-filetype plugin indent on
+" causing indentation issues on JS
+"filetype plugin indent on
 
 " --- General ---
 set nocompatible
@@ -28,6 +29,7 @@ set shiftwidth=4
 set tabstop=4
 set smarttab
 set expandtab
+set noeol " no EOL at end of files
 
 " --- Hacks/Fixes ---
 " disable auto-indentation/commenting when adding to lines below existing comments

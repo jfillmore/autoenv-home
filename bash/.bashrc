@@ -61,7 +61,7 @@ if [[ "$-" =~ 'i' ]]; then
     alias mailme="mail -s 'gud stuff' jonny@uk2group.com"
     alias jdiff="diff -yb --suppress-common-lines"
     alias ssh='ssh -o TCPKeepAlive=yes -o ServerAliveInterval=90'
-    alias swp_vim="for file in \$(find -iname .\*.swp); do vim -r "\$file" && rm "\$file"; done"
+    alias swp_vim="for file in \$(find . -iname .\*.swp); do vim -r "\$file" && rm "\$file"; done"
     alias halt='poweroff'
 
     if [ -d $HOME/scripts ]; then
@@ -80,7 +80,7 @@ if [[ "$-" =~ 'i' ]]; then
         . "$HOME/.bashrc.local"
     fi
     if [ -d "$HOME/.bashrc.d/" ]; then
-        files=$(find "$HOME/.bashrc.d/" -type f -maxdepth 1)
+        files=$(find "$HOME/.bashrc.d/" -maxdepth 1 -type f)
         if [ ${#files} -gt 1 ]; then
             for file in $files; do
                 . "$file"

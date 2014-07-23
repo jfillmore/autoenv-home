@@ -1,0 +1,59 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+usage() {
+        cat <<EOI
+usage: git_rev [ARGS] TICKET_NUM
+
+ARGS:
+  -f, --fetch     run "git fetch" first
+  -d, --delete    delete existing branch first
+EOI
+        return 1
+    }
+[ $# -eq 0 ] && {
+    usage
+    exit 1
+}
+
+fetch=0
+delete=0
+ticket=
+
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in 
+        --fetch|-d)
+            fetch=1
+            ;;
+        --delete|-d)
+            delete=1
+            ;;
+        --fd|-df)
+            fetch=1
+            delete=1
+            exit
+            ;;
+        *)
+            [ -z "$ticket" ] || {
+                fail "Ticket $ticket already specified"
+            }
+            ticket="$arg"
+            ;;
+    esac
+done
+
+branch=$(git branch -a | grep "/$ticket/")
+branch=${branch##*origin/}
+
+[ $fetch -eq 1 ] && git fetch origin $branch
+[ $delete -eq 1 ] && git branch -d "$branch"
+git checkout "$branch"

@@ -60,10 +60,17 @@ done
     usage
     fail "Invalid ticket: $ticket"
 }
+# we're in a git repo, right?
+cur_branch=$(git rev-parse --abbrev-ref HEAD) \
+    || fail "No git repo found?"
 
-cur_branch=$(git rev-parse --abbrev-ref HEAD)
-branch=$(git branch -a | grep "/$ticket/")
-branch=${branch##*origin/}
+# make sure we find the branch requested -- and only one
+branches=$(git branch -a | grep "remotes/origin/[^/]\+/$ticket/")\
+    || fail "Failed to locate a branch for ticket $ticket"
+[ $(echo "$branches" | wc -l) -eq 1 ] \
+    || fail "Multiple remote branches found:\n\n$branches"
+# and parse out the branch name
+branch=${branches##*origin/}
 
 # fetch/delete first, as requested
 [ $fetch -eq 1 ] && git fetch origin $branch
@@ -71,7 +78,7 @@ branch=${branch##*origin/}
 
 # do the deed, if needed -- might already be on this branch
 [ $delete -eq 0 -a "$branch" == "$cur_branch" ] || {
-    git checkout "$branch"
+    git checkout "$branch" || fail "Failed to change git branch"
 }
 
 # if we didn't fetch up front, do a quiet background fetch now

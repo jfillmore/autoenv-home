@@ -51,9 +51,31 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# sanity checks!
+[ -n "$ticket" ] || {
+    usage
+    fail "No ticket specified"
+}
+( echo "$ticket" | grep -qe '^[0-9]\+$' ) || {
+    usage
+    fail "Invalid ticket: $ticket"
+}
+
+cur_branch=$(git rev-parse --abbrev-ref HEAD)
 branch=$(git branch -a | grep "/$ticket/")
 branch=${branch##*origin/}
 
+# fetch/delete first, as requested
 [ $fetch -eq 1 ] && git fetch origin $branch
 [ $delete -eq 1 ] && git branch -d "$branch"
-git checkout "$branch"
+
+# do the deed, if needed -- might already be on this branch
+[ $delete -eq 0 -a "$branch" == "$cur_branch" ] || {
+    git checkout "$branch"
+}
+
+# if we didn't fetch up front, do a quiet background fetch now
+[ $fetch -eq 0 ] && {
+    git fetch origin $branch &>/dev/null &
+    disown -r
+}

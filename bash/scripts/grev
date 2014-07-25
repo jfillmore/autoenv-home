@@ -10,11 +10,14 @@ fail() {
 
 usage() {
         cat <<EOI
-usage: git_rev [ARGS] TICKET_NUM
+usage: $SCRIPT_NAME [ARGS] TICKET_NUM
+
+Checks out a git branch based on a "\$initials/\$ticket/\$description" branch naming convention.
 
 ARGS:
   -f, --fetch     run "git fetch" first
   -d, --delete    delete existing branch first
+  -h, --help      print this information and exit
 EOI
         return 1
     }
@@ -36,6 +39,10 @@ while [ $# -gt 0 ]; do
             ;;
         --delete|-d)
             delete=1
+            ;;
+        --help|-h)
+            usage
+            exit 0
             ;;
         --fd|-df)
             fetch=1

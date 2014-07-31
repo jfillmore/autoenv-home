@@ -81,7 +81,7 @@ branch=${branches##*origin/}
 
 # fetch/delete first, as requested
 [ $fetch -eq 1 ] && git fetch origin $branch
-[ $delete -eq 1 ] && git branch -d "$branch"
+[ $delete -eq 1 ] && git branch -D "$branch"
 
 # do the deed, if needed -- might already be on this branch
 [ $delete -eq 0 -a "$branch" == "$cur_branch" ] || {

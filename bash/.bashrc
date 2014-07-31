@@ -16,7 +16,7 @@ function grim {
     [ $# -eq 1 ] && {
         vim $(grep "$1" * | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
     } || {
-        vim $(grep "$1" "$2" | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
+        vim $(grep $@ | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
     }
 }
 

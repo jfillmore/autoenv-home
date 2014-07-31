@@ -5,7 +5,7 @@ Download auto_env
 -------------------
     mkdir -p ~/scripts && cd ~/scripts
     wget --no-check-certificate \
-        https://raw.github.com/jfillmore/auto_env/master/auto_env/scripts/auto_env.sh
+        https://raw.githubusercontent.com/jfillmore/auto_env/master/auto_env/scripts/auto_env.sh
     chmod 755 auto_env.sh
     ./auto_env.sh --help
 

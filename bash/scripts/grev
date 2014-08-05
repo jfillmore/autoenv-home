@@ -79,14 +79,16 @@ branches=$(git branch -a | grep "remotes/origin/[^/]\+/$ticket/")\
 # and parse out the branch name
 branch=${branches##*origin/}
 
+# make things easy on ourself and ensure we're at master first
+# otherwise you can't delete a branch you're in to pull updates easier
+[ "$cur_branch" == "master" ] \
+    || git checkout master >/dev/null \
+    || fail "Failed to center onto 'master' branch"
+
 # fetch/delete first, as requested
 [ $fetch -eq 1 ] && git fetch origin $branch
 [ $delete -eq 1 ] && git branch -D "$branch"
-
-# do the deed, if needed -- might already be on this branch
-[ $delete -eq 0 -a "$branch" == "$cur_branch" ] || {
-    git checkout "$branch" || fail "Failed to change git branch"
-}
+git checkout "$branch" || fail "Failed to change git branch"
 
 # if we didn't fetch up front, do a quiet background fetch now
 [ $fetch -eq 0 ] && {

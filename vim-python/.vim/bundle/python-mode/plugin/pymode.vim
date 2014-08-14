@@ -48,16 +48,16 @@ call pymode#default("g:pymode_trim_whitespaces", 1)
 " Set recomended python options
 call pymode#default("g:pymode_options", 1)
 
-" Maximal height of pymode quickfix window
-call pymode#default('g:pymode_quickfix_maxheight', 7)
-
 " Minimal height of pymode quickfix window
+call pymode#default('g:pymode_quickfix_maxheight', 6)
+
+" Maximal height of pymode quickfix window
 call pymode#default('g:pymode_quickfix_minheight', 3)
 
 " LOAD VIRTUALENV {{{
 "
 " Enable virtualenv support
-call pymode#default('g:pymode_virtualenv', 0)
+call pymode#default('g:pymode_virtualenv', 1)
 
 " Get path to virtualenv (by default take from shell)
 call pymode#default('g:pymode_virtualenv_path', $VIRTUAL_ENV)
@@ -102,7 +102,7 @@ call pymode#default("g:pymode_lint_message", 1)
 call pymode#default("g:pymode_lint_checkers", ['pyflakes', 'pep8', 'mccabe'])
 
 " Skip errors and warnings (e.g. E4,W)
-call pymode#default("g:pymode_lint_ignore", "E501,W")
+call pymode#default("g:pymode_lint_ignore", "E501,W,C901")
 
 " Select errors and warnings (e.g. E4,W)
 call pymode#default("g:pymode_lint_select", "")

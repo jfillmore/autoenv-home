@@ -10,14 +10,19 @@ fail() {
 
 usage() {
         cat <<EOI
-usage: $SCRIPT_NAME [ARGS] TICKET_NUM [BRANCH_INDEX]
+usage: $SCRIPT_NAME [COMMAND] [ARGS] TICKET_NUM [BRANCH_INDEX]
 
 Checks out a git branch based on a "\$initials/\$ticket/\$description" branch naming convention. If multiple branches are found, an index number must be provided.
 
+COMMANDS:
+  go                    Default -- goes to the branch specied
+  purge                 Deletes the local and remote branches if merged to master
+
 ARGS:
-  -f, --fetch     run "git fetch" first; else one runs in the background
-  -d, --delete    delete existing branch first, discarding local commits
-  -h, --help      print this information and exit
+  -b, --branch BRANCH   operate on specified branch instead of going by ticket number
+  -f, --fetch           run "git fetch" first; else one runs in the background
+  -d, --delete          delete local branch first, discarding local commits
+  -h, --help            print this information and exit
 EOI
         return 1
     }
@@ -28,13 +33,20 @@ EOI
 
 fetch=0
 delete=0
+command=
 ticket=
 branch_index=
+branch=  # determined from ticket number, normally
 
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
     case "$arg" in 
+        --branch|-b)
+            [ $# -ge 1 ] || fail "Missing argument to --branch"
+            branch="$1"
+            shift
+            ;;
         --fetch|-f)
             fetch=1
             ;;
@@ -51,51 +63,70 @@ while [ $# -gt 0 ]; do
             exit
             ;;
         *)
-            if [ -z "$ticket" ]; then
+            if [ -z "$command" ]; then
+                if echo "$arg" | grep -qE '^[0-9]+$'; then
+                    command=go
+                    ticket=$arg
+                else
+                    command=$arg
+                fi
+            elif [ -z "$ticket" ]; then
                 ticket="$arg"
             elif [ -z "$branch_index" ]; then
                 branch_index="$arg"
                 [ $branch_index -ge 1 -a $branch_index -le 100 ] \
                     || fail "Invalid branch index: a value between 1-100 expected"
             else
-                fail "Ticket $ticket already specified"
+                fail "Command '$command $ticket' already specified"
             fi
             ;;
     esac
 done
 
 # sanity checks!
-[ -n "$ticket" ] || {
+[ -n "$ticket" -o -n "$branch" ] || {
     usage
-    fail "No ticket specified"
+    fail "No ticket or branch specified"
 }
-( echo "$ticket" | grep -qe '^[0-9]\+$' ) || {
+[ -n "$ticket" -a -n "$branch" ] && {
     usage
-    fail "Invalid ticket: $ticket"
+    fail "Can't specify both a ticket number and a branch"
 }
 # we're in a git repo, right?
 cur_branch=$(git rev-parse --abbrev-ref HEAD) \
     || fail "No git repo found?"
 
-# make sure we find the branch requested -- and only one
-branches=$(git branch -a | grep "remotes/origin/[^/]\+/$ticket/")\
-    || fail "Failed to locate a branch for ticket $ticket"
-[ $(echo "$branches" | wc -l) -eq 1 ] || {
-    # we better have an index to confirm that we know we want a specific branch
-    [ -z "$branch_index" ] && {
-        expanded=
-        ctr=0
-        for branch in $branches; do
-            let ctr++
-            expanded="$expanded\n  $ctr. $branch"
-        done
-        fail "Multiple remote branches found; branch index required:\n$expanded"
+[ -n "$ticket" ] && {
+    # validate the ticket and look up the branch
+    ( echo "$ticket" | grep -qe '^[0-9]\+$' ) || {
+        usage
+        fail "Invalid ticket: $ticket"
     }
-    # pick out the specific branch
-    branches=$(echo "$branches" | sed "${branch_index}q;d")
+    # make sure we find the branch requested -- and only one
+    branches=$(git branch -a | grep "remotes/origin/[^/]\+/$ticket/") \
+        || fail "Failed to locate a branch for ticket $ticket"
+    [ $(echo "$branches" | wc -l) -eq 1 ] || {
+        # we better have an index to confirm that we know we want a specific branch
+        [ -z "$branch_index" ] && {
+            expanded=
+            ctr=0
+            for branch in $branches; do
+                let ctr++
+                expanded="$expanded\n  $ctr. $branch"
+            done
+            fail "Multiple remote branches found; branch index required:\n$expanded"
+        }
+        # pick out the specific branch
+        branches=$(echo "$branches" | sed "${branch_index}q;d")
+    }
+    # and parse out the branch name
+    branch=${branches##*origin/}
+} || {
+    # make sure this is a valid branch
+    remote="remotes/origin/$branch"
+    matched=$(git branch -a | awk "\$1 == \"$remote\" {print \$1}")
+    [ "$matched" == "$remote" ] || fail "Remote branch not found for branch '$branch'"
 }
-# and parse out the branch name
-branch=${branches##*origin/}
 
 # make things easy on ourself and pivot to master
 # otherwise you can't delete a branch you're in to pull updates easier
@@ -104,13 +135,31 @@ branch=${branches##*origin/}
     || git checkout master >/dev/null \
     || fail "Failed to center onto 'master' branch"
 
-# fetch/delete first, as requested
-[ $fetch -eq 1 ] && git fetch origin $branch
-[ $delete -eq 1 ] && git branch -D "$branch"
-git checkout "$branch" || fail "Failed to change git branch"
+if [ "${command:=go}" == "go" ]; then
+    # fetch/delete first, as requested
+    [ $fetch -eq 1 ] && git fetch origin $branch
+    [ $delete -eq 1 ] && git branch -D "$branch"
+    git checkout "$branch" || fail "Failed to change git branch"
 
-# if we didn't fetch up front, do a quiet background fetch now
-[ $fetch -eq 0 ] && {
-    git fetch origin $branch &>/dev/null &
-    disown -r
-}
+    # if we didn't fetch up front, do a quiet background fetch now
+    [ $fetch -eq 0 ] && {
+        git fetch origin $branch &>/dev/null &
+        disown -r
+    }
+elif [ "$command" == "purge" ]; then
+    # make sure master has this branch merged
+    if git branch -a --merged | grep -qE "remotes/origin/$branch$"; then
+        read -p "Delete merged branch '$branch'? (y/n) > " confirm
+        if [ "$confirm" == "y" ]; then
+            # delete the local and remote branches
+            git branch -D "$branch"
+            git push origin ":$branch"
+        else
+            echo "Aborting purge of '$branch' at user request"
+        fi
+    else
+        fail "Aborting purge of '$branch'; not merged to master"
+    fi
+else
+    fail "Invalid command: $command"
+fi

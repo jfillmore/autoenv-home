@@ -152,8 +152,8 @@ elif [ "$command" = "purge" ]; then
         read -p "Delete merged branch '$branch'? (y/n) > " confirm
         if [ "$confirm" = "y" ]; then
             # delete the local and remote branches
-            echo git branch -D "$branch"
-            echo git push origin ":$branch"
+            git branch -D "$branch"
+            git push origin ":$branch"
         else
             echo "Aborting purge of '$branch' at user request"
         fi

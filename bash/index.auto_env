@@ -4,7 +4,7 @@
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
-1  02b77f8e90df9b4e3c0c315ddb8f8fce533055e2  ./scripts/grev
+1  bc9935ec9a9125431f084a2322fa1843e72394f8  ./scripts/grev
 0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass

@@ -41,7 +41,7 @@ branch=  # determined from ticket number, normally
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
-    case "$arg" in 
+    case "$arg" in
         --branch|-b)
             [ $# -ge 1 ] || fail "Missing argument to --branch"
             branch="$1"
@@ -125,35 +125,35 @@ cur_branch=$(git rev-parse --abbrev-ref HEAD) \
     # make sure this is a valid branch
     remote="remotes/origin/$branch"
     matched=$(git branch -a | awk "\$1 == \"$remote\" {print \$1}")
-    [ "$matched" == "$remote" ] || fail "Remote branch not found for branch '$branch'"
+    [ "$matched" = "$remote" ] || fail "Remote branch not found for branch '$branch'"
 }
 
 # make things easy on ourself and pivot to master
 # otherwise you can't delete a branch you're in to pull updates easier
 # it also helps avoid abandoning local changes
-[ "$cur_branch" == "master" ] \
-    || git checkout master >/dev/null \
-    || fail "Failed to center onto 'master' branch"
+if [ "$cur_branch" != "master" ]; then
+    git checkout master >/dev/null \
+        || fail "Failed to center onto 'master' branch"
+fi
 
-if [ "${command:=go}" == "go" ]; then
+if [ "${command:-go}" = "go" ]; then
     # fetch/delete first, as requested
-    [ $fetch -eq 1 ] && git fetch origin $branch
+    [ $fetch -eq 1 ] && git fetch origin "$branch"
     [ $delete -eq 1 ] && git branch -D "$branch"
     git checkout "$branch" || fail "Failed to change git branch"
 
     # if we didn't fetch up front, do a quiet background fetch now
     [ $fetch -eq 0 ] && {
         git fetch origin $branch &>/dev/null &
-        disown -r
     }
-elif [ "$command" == "purge" ]; then
+elif [ "$command" = "purge" ]; then
     # make sure master has this branch merged
     if git branch -a --merged | grep -qE "remotes/origin/$branch$"; then
         read -p "Delete merged branch '$branch'? (y/n) > " confirm
-        if [ "$confirm" == "y" ]; then
+        if [ "$confirm" = "y" ]; then
             # delete the local and remote branches
-            git branch -D "$branch"
-            git push origin ":$branch"
+            echo git branch -D "$branch"
+            echo git push origin ":$branch"
         else
             echo "Aborting purge of '$branch' at user request"
         fi

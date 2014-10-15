@@ -57,13 +57,11 @@ while [ $# -gt 0 ]; do
             usage
             exit 0
             ;;
-        --fd|-df)
-            fetch=1
-            delete=1
-            exit
-            ;;
         *)
-            if [ -z "$command" ]; then
+            if [ "$arg" = '.' ]; then
+                branch="master"
+                command=go
+            elif [ -z "$command" ]; then
                 if echo "$arg" | grep -qE '^[0-9]+$'; then
                     command=go
                     ticket=$arg
@@ -131,7 +129,7 @@ cur_branch=$(git rev-parse --abbrev-ref HEAD) \
 # make things easy on ourself and pivot to master
 # otherwise you can't delete a branch you're in to pull updates easier
 # it also helps avoid abandoning local changes
-if [ "$cur_branch" != "master" ]; then
+if [ "$cur_branch" != "master" -a "$branch" != "master" ]; then
     git checkout master >/dev/null \
         || fail "Failed to center onto 'master' branch"
 fi
@@ -139,14 +137,18 @@ fi
 if [ "${command:-go}" = "go" ]; then
     # fetch/delete first, as requested
     [ $fetch -eq 1 ] && git fetch origin "$branch"
-    [ $delete -eq 1 ] && git branch -D "$branch"
+    [ $delete -eq 1 ] && {
+        [ "$branch" = "master" ] && {
+            fail "Refusing to delete 'master' branch!"
+        } || git branch -D "$branch"
+    }
     git checkout "$branch" || fail "Failed to change git branch"
-
     # if we didn't fetch up front, do a quiet background fetch now
     [ $fetch -eq 0 ] && {
-        git fetch origin $branch &>/dev/null &
+        git fetch origin $branch &>/dev/null </dev/null &
     }
 elif [ "$command" = "purge" ]; then
+    [ "$branch" = "master" ] && fail "Refusing to purge 'master' branch!"
     # make sure master has this branch merged
     if git branch -a --merged | grep -qE "remotes/origin/$branch$"; then
         read -p "Delete merged branch '$branch'? (y/n) > " confirm

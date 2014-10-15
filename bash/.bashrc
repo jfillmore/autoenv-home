@@ -20,6 +20,10 @@ function grim {
     }
 }
 
+function git-add {
+    git add $(git status | grep -E '^#\s+modified:' | awk '{print $3}')
+}
+
 # javascript checking
 function jslint() {
     local options='browser:true, nomen:false'

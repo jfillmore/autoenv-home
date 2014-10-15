@@ -1,10 +1,10 @@
-0  c9f6be20c19e64d8c4ebc11ca5b5f8dca74cf165  ./.bashrc
+0  13c727b0a571961dc864db8c9b8d8a785d64b796  ./.bashrc
 0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  ./scripts/.init
 1  1573cdd347654b922ca435ad40a1097b96a65c48  ./scripts/.template
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
-1  962f199f52c6392c9794d86a93d4420e235a5f87  ./scripts/grev
+1  a02bbc338f35c453b0f2a61aef4a8ff6572e427b  ./scripts/grev
 0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass

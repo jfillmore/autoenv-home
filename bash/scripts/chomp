@@ -1,0 +1,47 @@
+#!/usr/bin/python
+
+# strip newline from last line of a file
+# h/t: http://stackoverflow.com/questions/1654021/how-can-i-delete-a-newline-if-it-is-the-last-character-in-a-file/1663283#1663283
+
+import sys
+
+
+def trunc(filename, new_len):
+    try:
+        # open with mode "append" so we have permission to modify
+        # cannot open with mode "write" because that clobbers the file!
+        f = open(filename, "ab")
+        f.truncate(new_len)
+        f.close()
+    except IOError:
+        print "cannot write to file:", filename
+        sys.exit(2)
+
+
+# get input argument
+if len(sys.argv) == 2:
+    filename = sys.argv[1]
+else:
+    filename = "--help"  # wrong number of arguments so print help
+
+if filename == "--help" or filename == "-h":
+    print "Usage: %s <filename>" % sys.argv[0]
+    print "Strips a newline off the last line of a file."
+    sys.exit(1)
+
+try:
+    # must have mode "b" (binary) to allow f.seek() with negative offset
+    f = open(filename, "rb")
+except IOError:
+    print "file does not exist:", filename
+    sys.exit(2)
+
+SEEK_EOF = 2
+f.seek(-2, SEEK_EOF)  # seek to two bytes before end of file
+end_pos = f.tell()
+line = f.read()
+f.close()
+if line.endswith("\r\n"):
+    trunc(filename, end_pos)
+elif line.endswith("\n"):
+    trunc(filename, end_pos + 1)

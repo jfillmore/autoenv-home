@@ -59,3 +59,4 @@ let @b = 'Vnxnddnz.'
 syntax on
 colorscheme jonny
 autocmd BufRead *.txt set tw=78
+autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t

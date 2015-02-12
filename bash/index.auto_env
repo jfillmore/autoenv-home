@@ -5,8 +5,8 @@
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  694ab991b038553eecf9373f37d85aa833fabaee  ./scripts/chomp
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
-1  6d60b83d930f2c95d65e5bb428902f347a1d004f  ./scripts/git-cleanup
-1  a02bbc338f35c453b0f2a61aef4a8ff6572e427b  ./scripts/grev
+1  19b53fe9055ce6e02313ac58d363670558ee16f2  ./scripts/git-cleanup
+1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./scripts/grev
 0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass

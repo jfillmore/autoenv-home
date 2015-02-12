@@ -104,7 +104,7 @@ for ((i=0; i<${#branches[*]}; i++)); do
             read -p "Delete merged branch '$branch'? (y/n) > " confirm
             if [ "$confirm" = "y" ]; then
                 # delete the local and remote branches
-                cmd git branch -D "$branch" || \
+                cmd git branch -d "$branch" || \
                     echo "Local deletion failed for '$branch'" >&2
                 cmd git push origin --delete "$branch" || \
                     echo "Remote deletion failed for '$branch'" >&2

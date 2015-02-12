@@ -1,0 +1,130 @@
+#!/bin/sh -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+fail() {
+	echo "$@"
+	exit 1
+}
+
+rem() {
+    [ $verbose -eq 0 ] && return
+    echo "+ $@" >&2
+}
+
+cmd() {
+    [ $verbose -eq 1 ] && {
+        $@
+    } || {
+        $@ &>/dev/null
+    }
+}
+
+usage() {
+        cat <<EOI
+usage: $SCRIPT_NAME PREFIX
+
+Looks for all remote branches matching the prefix given (e.g. "jkf/") and prompts the user to delete any branches already merged to master. Will NOT check for local commits made after a branch has merged.
+
+ARGS:
+  PREFIX                Prefix to use when searching for branches to delete
+  -d, --dryrun          Don't offer to delete branches; print stats only
+  -h, --help            Print this information and exit
+  -v, --verbose         Print verbose debugging info
+EOI
+        return 1
+    }
+[ $# -eq 0 ] && {
+    usage
+    exit 1
+}
+
+prefix=
+verbose=0
+dryrun=0
+
+while [ $# -gt 0 ]; do
+    arg="$1"
+    shift
+    case "$arg" in
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        --dryrun|-d)
+            dryrun=1
+            ;;
+        --verbose|-v)
+            verbose=1
+            ;;
+        *)
+            if [ -z "$prefix" ]; then
+                prefix="$arg"
+            else
+                fail "Prefix of '$prefix' already specified"
+            fi
+            ;;
+    esac
+done
+
+# sanity checks!
+# we're in a git repo, right?
+cur_branch=$(git rev-parse --abbrev-ref HEAD) \
+    || fail "No git repo found?"
+[ -n "$prefix" ] || fail "No prefix given; aborting"
+# move to master to make things easier
+if [ "$cur_branch" != "master" ]; then
+    git checkout master >/dev/null \
+        || fail "Failed to center onto 'master' branch"
+fi
+git fetch &>/dev/null
+
+# search for the remote branches
+branches=($(git branch -a | grep "remotes/origin/$prefix"))
+# none found? QQ
+[ ${#branches[*]} -eq 0 ] && fail "No remote branches matching '$prefix' found"
+
+# check whether each branch can be deleted
+stats_found=${#branches[*]}
+stats_merged=0
+stats_deleted=0
+for ((i=0; i<${#branches[*]}; i++)); do
+    remote=${branches[$i]}
+    # parse out the local branch name
+    branch=${remote##*origin/}
+    # just in case...
+    [ "$branch" = "master" ] && fail "Refusing to purge 'master' branch!"
+    # make sure master has this branch merged
+    if git branch -a --merged | grep -qE "remotes/origin/$branch$"; then
+        let stats_merged+=1
+        [ $dryrun -eq 1 ] && {
+            rem "Dry-run; skipping offer to delete merged branch '$branch'"
+        } || {
+            read -p "Delete merged branch '$branch'? (y/n) > " confirm
+            if [ "$confirm" = "y" ]; then
+                # delete the local and remote branches
+                cmd git branch -D "$branch" || \
+                    echo "Local deletion failed for '$branch'" >&2
+                cmd git push origin --delete "$branch" || \
+                    echo "Remote deletion failed for '$branch'" >&2
+                let stats_deleted+=1
+                rem "Deleted local and remote branches for '$branch'"
+            else
+                rem "Aborting purge of '$branch' at user request"
+            fi
+        }
+    else
+        rem "Skipping branch '$branch'; not merged to master"
+    fi
+done 
+
+# stats!
+echo "=- Branches [prefix=$prefix] -==========================="
+echo "    found: $stats_found"
+echo "   merged: $stats_merged"
+echo "  deleted: $stats_deleted"
+# and try to return to where we were before
+if [ "$cur_branch" != "master" ]; then
+    git checkout "$cur_branch" >/dev/null
+fi

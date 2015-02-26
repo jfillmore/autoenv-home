@@ -13,7 +13,7 @@ ssh_args() {
 		-o ConnectTimeout=$SSH_TIMEOUT
 		-o TCPKeepAlive=yes
 		-o ServerAliveInterval=$SSH_KEEPALIVE
-		-p $SSH_PORT"
+        -A -p $SSH_PORT"
     # the key might already just be cached in the ssh-agent
     [ -n "$SSH_KEY" ] && args="$args -i '$SSH_KEY'"
     echo "$args"
@@ -28,8 +28,8 @@ test_ssh() {
 }
 
 test_tun() {
-	telnet localhost "$1" </dev/null 2>&1 \
-		| grep -q '^Connected to'
+	nc localhost "$1" < /dev/null &>/dev/null
+    return $?
 }
 
 tunnel() {
@@ -139,6 +139,9 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+
+which nc &>/dev/null || fail "Missing 'nc' binary?"
+
 if [ -n "$SSH_KEY" ]; then
     # is the SSH key found?
     [ -f "$SSH_KEY" ] || fail "Unable to locate SSH key file '$SSH_KEY'."
@@ -158,6 +161,7 @@ if [ $DRYRUN -eq 2 ]; then
 fi
 
 # and now off to the races
+PIDS=()
 for tunnel in $SSH_TUNNELS; do
     local_port=$(echo "$tunnel" | awk -F'/' '{print $1}')
     if test_tun $local_port; then
@@ -168,6 +172,7 @@ for tunnel in $SSH_TUNNELS; do
             || fail "Failed to create SSH tunnel '$tunnel'"
         # we might have got password prompts back... did we REALLY create it?
         tun_pid=$!
+        PIDS[${#PIDS[*]}]=$tun_pid
         debug "Tunneling localhost:$local_port => $remote_host (PID: $tun_pid)"
         # wait a moment and verify that it worked... QQ at the delay
         sleep 2
@@ -177,5 +182,9 @@ for tunnel in $SSH_TUNNELS; do
         }
     fi
 done
+
+# close the tunnels once the user aborts this script
+trap "echo -n '\n-- Stopping SSH tunnels (PIDs: ${PIDS[*]})--\n'; kill ${PIDS[*]}" SIGINT SIGTERM SIGKILL
+wait ${PIDS[*]}
 
 exit 0

@@ -53,7 +53,11 @@ if [[ "$-" =~ 'i' ]]; then
     #set -o vi
 
     alias jscc='java -jar $HOME/scripts/compiler.jar'
-    alias ls="ls -G"
+    [ $(uname) = 'Darwin' ] && {
+        alias ls="ls -G"
+    } || {
+        alias ls="ls --color=auto"
+    } 
     if [ $UID -eq 0 ]; then
         alias l="ls -la"
         export PS1="\[\033[1;37m\][\[\033[1;33m\]\h \[\033[1;34m\]\w\[\033[1;37m\]]#\[\033[0m\] "

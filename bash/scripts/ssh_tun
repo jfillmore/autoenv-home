@@ -150,7 +150,7 @@ if [ -n "$SSH_KEY" ]; then
     ssh-add "$SSH_KEY" 2>/dev/null
 fi
 
-if [ $DRYRUN -eq 2 ]; then
+if [ $DRYRUN -eq 1 ]; then
     # the remote host is reachable, right?
     debug "Testing SSH ($SSH_USER@$SSH_HOST:$SSH_PORT)"
     whoami=$(test_ssh whoami) \
@@ -161,15 +161,19 @@ if [ $DRYRUN -eq 2 ]; then
 fi
 
 # and now off to the races
+errors=0
 PIDS=()
 for tunnel in $SSH_TUNNELS; do
     local_port=$(echo "$tunnel" | awk -F'/' '{print $1}')
     if test_tun $local_port; then
         debug "Local port $local_port is already open"
+        let errors+=1
     else
         remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
-        tunnel $tunnel \
-            || fail "Failed to create SSH tunnel '$tunnel'"
+        tunnel $tunnel || {
+            let errors+=1
+            fail "Failed to create SSH tunnel '$tunnel'"
+        }
         # we might have got password prompts back... did we REALLY create it?
         tun_pid=$!
         PIDS[${#PIDS[*]}]=$tun_pid
@@ -177,14 +181,17 @@ for tunnel in $SSH_TUNNELS; do
         # wait a moment and verify that it worked... QQ at the delay
         sleep 2
         [ $DRYRUN -eq 0 ] && {
-            test_tun $local_port \
-                || fail "Failed to verify SSH tunnel '$tunnel' -- check for auth errors."
+            test_tun $local_port || {
+                let errors+=1
+                fail "Failed to verify SSH tunnel '$tunnel' -- check for auth errors."
+            }
         }
     fi
 done
 
 # close the tunnels once the user aborts this script
-trap "echo -n '\n-- Stopping SSH tunnels (PIDs: ${PIDS[*]})--\n'; kill ${PIDS[*]}" SIGINT SIGTERM SIGKILL
-wait ${PIDS[*]}
-
-exit 0
+[ $DRYRUN -eq 0 ] && {
+    trap "echo -n '\n-- Stopping SSH tunnels (PIDs: ${PIDS[*]})--\n'; kill ${PIDS[*]}" SIGINT SIGTERM SIGKILL
+    wait ${PIDS[*]}
+}
+exit $errors

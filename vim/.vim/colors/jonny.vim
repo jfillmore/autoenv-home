@@ -183,3 +183,6 @@ hi Pmenu ctermfg=grey guifg=#AAAAAA ctermbg=darkblue guibg=#0000AA
 hi PmenuSel ctermfg=black guifg=#000000 cterm=underline gui=underline ctermbg=grey guibg=#AAAAAA
 hi PmenuSbar ctermfg=lightcyan guifg=#55FFFF ctermbg=black guibg=#000000
 hi PmenuThumb ctermfg=cyan guifg=#55FFFF ctermbg=darkblue guibg=#0000AA
+
+" HTML
+hi htmlItalic ctermbg=black

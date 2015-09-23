@@ -1,6 +1,6 @@
 0  2ec571516af3a6bc1ed7031f14a17d52ff4d4b34  ./.bashrc
 0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  ./scripts/.init
-1  1573cdd347654b922ca435ad40a1097b96a65c48  ./scripts/.template
+1  b76df2a76212e431af76d59c277989248b0396ab  ./scripts/.template
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  694ab991b038553eecf9373f37d85aa833fabaee  ./scripts/chomp

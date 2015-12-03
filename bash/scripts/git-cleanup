@@ -30,6 +30,7 @@ Looks for all remote branches matching the prefix given (e.g. "jkf/") and prompt
 ARGS:
   PREFIX                Prefix to use when searching for branches to delete
   -d, --dryrun          Don't offer to delete branches; print stats only
+  -f, --force           Force delete merged branches without prompting.
   -h, --help            Print this information and exit
   -v, --verbose         Print verbose debugging info
 EOI
@@ -43,6 +44,7 @@ EOI
 prefix=
 verbose=0
 dryrun=0
+force=0
 
 while [ $# -gt 0 ]; do
     arg="$1"
@@ -54,6 +56,9 @@ while [ $# -gt 0 ]; do
             ;;
         --dryrun|-d)
             dryrun=1
+            ;;
+        --force|-f)
+            force=1
             ;;
         --verbose|-v)
             verbose=1
@@ -79,43 +84,74 @@ if [ "$cur_branch" != "master" ]; then
         || fail "Failed to center onto 'master' branch"
 fi
 git fetch &>/dev/null
+[ $dryrun -eq 1 ] && {
+    git remote prune origin --dry-run
+} || {
+    git remote prune origin &>/dev/null
+}
 
 # search for the remote branches
-branches=($(git branch -a | grep "remotes/origin/$prefix"))
-# none found? QQ
-[ ${#branches[*]} -eq 0 ] && fail "No remote branches matching '$prefix' found"
+remotes=($(git branch -a | grep -E "^ *remotes/origin/$prefix"))
+locals=($(git branch -a | grep -E "^ *$prefix"))
 
-# check whether each branch can be deleted
-stats_found=${#branches[*]}
+stats_found=$((${#remotes[*]} + ${#locals[*]}))
 stats_merged=0
 stats_deleted=0
-for ((i=0; i<${#branches[*]}; i++)); do
-    remote=${branches[$i]}
+
+for ((i=0; i<${#remotes[*]}; i++)); do
+    remote=${remotes[$i]}
     # parse out the local branch name
     branch=${remote##*origin/}
     # just in case...
     [ "$branch" = "master" ] && fail "Refusing to purge 'master' branch!"
     # make sure master has this branch merged
-    if git branch -a --merged | grep -qE "remotes/origin/$branch$"; then
+    if git branch -a --merged | grep -qE "^ *remotes/origin/$branch$"; then
         let stats_merged+=1
         [ $dryrun -eq 1 ] && {
-            rem "Dry-run; skipping offer to delete merged branch '$branch'"
+            rem "Dry-run; skipping offer to delete merged remote branch '$branch'"
         } || {
-            read -p "Delete merged branch '$branch'? (y/n) > " confirm
+            [ $force -eq 1 ] \
+                && confirm=y \
+                || read -p "Delete merged remote branch '$branch'? (y/n) > " confirm
             if [ "$confirm" = "y" ]; then
-                # delete the local and remote branches
-                cmd git branch -d "$branch" || \
-                    echo "Local deletion failed for '$branch'" >&2
                 cmd git push origin --delete "$branch" || \
                     echo "Remote deletion failed for '$branch'" >&2
                 let stats_deleted+=1
-                rem "Deleted local and remote branches for '$branch'"
+                rem "Deleted remote branch for '$branch'"
             else
-                rem "Aborting purge of '$branch' at user request"
+                rem "Aborting purge of remote branch '$branch' at user request"
             fi
         }
     else
-        rem "Skipping branch '$branch'; not merged to master"
+        rem "Skipping remote branch '$branch'; not merged to master"
+    fi
+done 
+
+for ((i=0; i<${#locals[*]}; i++)); do
+    branch=${locals[$i]}
+    # just in case...
+    [ "$branch" = "master" ] && fail "Refusing to purge 'master' branch!"
+    # make sure master has this branch merged
+    if git branch -a --merged | grep -qE "^ *$branch$"; then
+        let stats_merged+=1
+        [ $dryrun -eq 1 ] && {
+            rem "Dry-run; skipping offer to delete merged local branch '$branch'"
+        } || {
+            [ $force -eq 1 ] \
+                && confirm=y \
+                || read -p "Delete merged local branch '$branch'? (y/n) > " confirm
+            if [ "$confirm" = "y" ]; then
+                # delete the local and remote branches
+                cmd git branch -D "$branch" || \
+                    echo "Local deletion failed for '$branch'" >&2
+                let stats_deleted+=1
+                rem "Deleted local branch for '$branch'"
+            else
+                rem "Aborting purge of local branch '$branch' at user request"
+            fi
+        }
+    else
+        rem "Skipping local branch '$branch'; not merged to master"
     fi
 done 
 

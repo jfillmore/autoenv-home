@@ -4,7 +4,7 @@ BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
 fail() {
-	echo "$@"
+	echo "$@" >&2
 	exit 1
 }
 
@@ -166,7 +166,7 @@ PIDS=()
 for tunnel in $SSH_TUNNELS; do
     local_port=$(echo "$tunnel" | awk -F'/' '{print $1}')
     if test_tun $local_port; then
-        debug "Local port $local_port is already open"
+        fail "Local port $local_port is already open"
         let errors+=1
     else
         remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
@@ -190,7 +190,7 @@ for tunnel in $SSH_TUNNELS; do
 done
 
 # close the tunnels once the user aborts this script
-[ $DRYRUN -eq 0 ] && {
+[ $DRYRUN -eq 0 -a ${#PIDS[@]} -gt 0 ] && {
     trap "echo -n '\n-- Stopping SSH tunnels (PIDs: ${PIDS[*]})--\n'; kill ${PIDS[*]}" SIGINT SIGTERM SIGKILL
     wait ${PIDS[*]}
 }

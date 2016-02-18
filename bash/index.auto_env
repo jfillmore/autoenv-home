@@ -10,4 +10,5 @@
 0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
+1  f1882a9923ba28a8019fa9309d8a0fa4f7aa8572  ./scripts/sniff_nonascii.sh
 1  351841c9130a46dd2eb8ad0b5d2348cab783861d  ./scripts/ssh_tun

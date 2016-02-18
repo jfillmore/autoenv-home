@@ -17,7 +17,7 @@ set guioptions-=T
 set ruler
 set wrap
 
-"set number
+set relativenumber
 
 " --- Indendation ---
 set smartindent
@@ -41,8 +41,8 @@ fixdel
 " --- Shortcuts ---
 " make it easy to paste formatted text
 noremap <F4> :set paste!<CR>
-" show/hide line numbers
-noremap <F5> :set number!<CR>
+" show/hide relative line numbers
+noremap <F5> :set relativenumber!<CR>
 " show/hide search highlighting
 noremap <F6> :set hlsearch!<CR>
 set backspace=indent,eol,start

@@ -80,18 +80,20 @@ find_args=( . -type f )
 find "${find_args[@]}" | while read fname; do
     [ -f "$fname" ] || fail "Failed to read file name '$fname' correctly"
     found=$(pcregrep -c "[\x80-\xFF]+" "$fname" 2>/dev/null)
-    [ $? -ne 0 ] && {
-        echo ">> Failed to parse file '$fname'; line lengths way too long, maybe? <<"
+    [ -z "$found" ] && {
         echo
-    }
-    [ $found -gt 0 ] && {
-        # first line of many of these has a byte order mark at the start
-        errors=$(pcregrep -o -n "[\x80-\xFF]+" "$fname" | grep -v '^1:' 2>/dev/null)
-        [ ${#errors} -gt 0 ] && {
-            echo "====> $fname (~$found found) <===="
-            pcregrep -o --color=auto -n "[\x80-\xFF]+" "$fname" 2>/dev/null
-            echo
-            echo
+        echo "Failed to read '$fname'; line lengths too long?"
+        echo
+    } || {
+        [ $found -gt 0 ] && {
+            # first line of many of these has a byte order mark at the start
+            errors=$(pcregrep -o -n "[\x80-\xFF]+" "$fname" | grep -v '^1:' 2>/dev/null)
+            [ ${#errors} -gt 0 ] && {
+                echo "====> $fname (~$found found) <===="
+                pcregrep -o --color=auto -n "[\x80-\xFF]+" "$fname" 2>/dev/null
+                echo
+                echo
+            }
         }
     }
 done | less -R

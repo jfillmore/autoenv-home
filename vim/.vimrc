@@ -57,6 +57,7 @@ let @b = 'Vnxnddnz.'
 
 " --- Style ---
 syntax on
+syntax sync fromstart
 colorscheme jonny
 autocmd BufRead *.txt set tw=78
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t

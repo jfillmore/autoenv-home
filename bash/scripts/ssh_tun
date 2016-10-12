@@ -54,8 +54,8 @@ Usage: $SCRIPT_NAME [OPTIONS] SSH_USER@SSH_HOST TUNNEL [TUNNEL...]
 (e.g.)
 [you@box ~]$ $SCRIPT_NAME -i ~/.ssh/bob.key -p 222 \\
     bob@somehost.com \\
-    8000/example.com/80 \\
-    8443/example.com/443
+    8000:example.com:80 \\
+    8443:example.com:443
 
 OPTIONS:
     -d|--dry-run          Perform all tests, but do not start any SSH tunnels
@@ -131,7 +131,7 @@ while [ $# -gt 0 ]; do
                 SSH_HOST=${ssh_str##*@}
             else
                 # make sure it looks like a tunnel
-                [ 3 -eq $(echo "$arg" | awk -F'/' '{print NF}') ] \
+                [ 3 -eq $(echo "$arg" | awk -F':' '{print NF}') ] \
                     || fail "Invalid SSH tunnel format: $arg"
                 SSH_TUNNELS="$SSH_TUNNELS $arg"
             fi
@@ -164,12 +164,12 @@ fi
 errors=0
 PIDS=()
 for tunnel in $SSH_TUNNELS; do
-    local_port=$(echo "$tunnel" | awk -F'/' '{print $1}')
+    local_port=$(echo "$tunnel" | awk -F':' '{print $1}')
     if test_tun $local_port; then
         fail "Local port $local_port is already open"
         let errors+=1
     else
-        remote_host=$(echo "$tunnel" | awk -F'/' '{print $2":"$3}')
+        remote_host=$(echo "$tunnel" | awk -F':' '{print $2":"$3}')
         tunnel $tunnel || {
             let errors+=1
             fail "Failed to create SSH tunnel '$tunnel'"

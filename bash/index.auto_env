@@ -1,4 +1,5 @@
-0  2ec571516af3a6bc1ed7031f14a17d52ff4d4b34  ./.bashrc
+0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
+0  b92abb661edf291e80ce36e5574e353f7c1684d3  ./.bashrc
 0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  ./scripts/.init
 1  67a04ecf645449f8104de1b0276d39b7a20a1202  ./scripts/.template
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors

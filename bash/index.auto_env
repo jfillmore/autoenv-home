@@ -12,4 +12,5 @@
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
-1  a800603df7ad2e2db9b4045488785bace62bda6e  ./scripts/ssh_tun
+1  cf5dd952c7b90458cafa9b74d92372e0b36eec16  ./scripts/ssh_tun
+1  01ea69d2131dd1fc658b91f0798785bdd03d390b  ./scripts/stats.py

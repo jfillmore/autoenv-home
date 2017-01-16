@@ -129,6 +129,8 @@ while [ $# -gt 0 ]; do
                 ssh_str="$arg"
                 SSH_USER=${ssh_str%%@*}
                 SSH_HOST=${ssh_str##*@}
+                # no user given? default to current user
+                [ "$SSH_USER" = "$SSH_HOST" ] && SSH_USER=$USER
             else
                 # make sure it looks like a tunnel
                 [ 3 -eq $(echo "$arg" | awk -F':' '{print NF}') ] \

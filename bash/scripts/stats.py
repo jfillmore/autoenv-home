@@ -2,6 +2,7 @@
 
 import math  
 import sys  
+import re
   
 
 def sd_calc(data):  
@@ -36,15 +37,27 @@ def avg_calc(ls):
 def main():
     nums = []
     skipped = 0
+    filtered = 0
+    num_re = re.compile('[^-.0-9]')
     for line in sys.stdin.readlines():
         try:
             nums.append(float(line))
         except Exception as e:
-            skipped += 1
-            continue
-    print "count: %d (skipped: %d), avg: %.2f, stddev: %.2f, range: %s - %s, sum: %.2f" % (
+            try:
+                nums.append(float(
+                    ''.join(filter(
+                        lambda a: a if a else None,
+                        re.split('[^-.0-9]', line)
+                    ))
+                ))
+                filtered += 1
+            except Exception as e:
+                skipped += 1
+                continue
+    print "count: %d (skipped: %d, filtered %d), avg: %.2f, stddev: %.2f, range: %s - %s, sum: %.2f" % (
         len(nums),
         skipped,
+        filtered,
         avg_calc(nums),
         sd_calc(nums),
         min(nums),

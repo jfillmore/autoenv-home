@@ -5,6 +5,8 @@
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  694ab991b038553eecf9373f37d85aa833fabaee  ./scripts/chomp
+1  7e08683b381675525d7ffb9dc7b48d7a78cd01d1  ./scripts/color.py
+1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./scripts/grev
@@ -13,4 +15,4 @@
 1  1e23d73a717eb5be7d38f1f6f248d3af279beab6  ./scripts/rpass
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
 1  cf5dd952c7b90458cafa9b74d92372e0b36eec16  ./scripts/ssh_tun
-1  01ea69d2131dd1fc658b91f0798785bdd03d390b  ./scripts/stats.py
+1  23363b50c20e6218742446c4280f3151acb34de7  ./scripts/stats.py

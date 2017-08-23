@@ -20,7 +20,8 @@ set wrap
 set relativenumber
 
 " --- Indendation ---
-set smartindent
+"set smartindent
+filetype indent on
 set autoindent
 
 " --- Spaces/Tabs ---

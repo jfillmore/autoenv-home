@@ -1,3 +1,5 @@
+0  30918f58b4409dc2f00482a771ca2288b0cc8ff9  ./.vim/autoload/localrc.vim
 0  b099d37ff87054d2b22292bb4e037bd7f69fdf88  ./.vim/autoload/pathogen.vim
 0  9904c943a5034d2f6af5a000be80bacab4f765c2  ./.vim/colors/jonny.vim
-0  020f9dd80fb4ab0e8776ebf97025f1ac5fa36008  ./.vimrc
+0  c4bbcebf29f05cf0e8e26e5356527b5d4f7adaf0  ./.vim/localrc.vim
+0  9a955eb7caa722e5ad175ba2efe59e502245edf7  ./.vimrc

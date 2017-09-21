@@ -188,31 +188,30 @@ if [ $action = 'index' ]; then
         cd "$dir" || fail "Failed to change to '$dir'."
         # generate checksums for everything in here
         # don't overwrite the existing index until we are done
-        find . -type f -print0 | xargs -0 $shasum > .index.auto_env.$$
+        find . -type f \
+            -not -path '*/.git/*' \
+            -not -name '.index.auto_env.*' \
+            -not -name 'index.auto_env' \
+            -not -name '.*.sw?' \
+            -print0 \
+            | xargs -0 $shasum > .index.auto_env.$$
         if [ $? -ne 0 ]; then
             rm .index.auto_env.$$ &>/dev/null
             fail "Failed to generate checksum list for directory '$dir'."
         fi
         # TODO: look for things in the existing index file and report how many new/changed/added
-        # filter and augument the list
+        # add meta data (checksum, exec flag, etc) to the index
         scripts=0 # out of curiosity, how many were scripts?
         while read checksum path; do
-            skip=0
-            # don't include our own checksum files in the index, or swap files
-            if echo "$path" | grep -qE '^(.*/\..*\.sw.|\.\/\.?index\.auto_env(\.[0-9]+)?)$'; then
-                skip=1
+            # figure out which were executable files
+            name=$(find "$path" -type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \))
+            if [ ${#name} -ne 0 ]; then
+                exec_bit=1
+                scripts=$((scripts + 1))
+            else 
+                exec_bit=0
             fi
-            if [ $skip -eq 0 ]; then
-                # figure out which were executable files
-                name=$(find "$path" -type f \( -perm -u+x -o -perm -g+x -o -perm -o+x \))
-                if [ ${#name} -ne 0 ]; then
-                    exec_bit=1
-                    scripts=$((scripts + 1))
-                else 
-                    exec_bit=0
-                fi
-                echo "$exec_bit  $checksum  $path"
-            fi
+            echo "$exec_bit  $checksum  $path"
         done < .index.auto_env.$$ > .index.auto_env.$$.done
         if [ $? -ne 0 ]; then
             rm .index.auto_env.$$ &>/dev/null

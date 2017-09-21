@@ -13,11 +13,7 @@ function setPrompt {
 }
 
 function grim {
-    [ $# -eq 1 ] && {
-        vim $(grep --binary-files=without-match "$1" * | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
-    } || {
-        vim $(grep --binary-files=without-match $@ | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
-    }
+    vim $(grep -R --binary-files=without-match "$@" . | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
 }
 
 if [[ "$-" =~ 'i' ]]; then

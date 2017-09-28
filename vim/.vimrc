@@ -20,8 +20,7 @@ set wrap
 set relativenumber
 
 " --- Indendation ---
-"set smartindent
-filetype indent on
+set smartindent
 set autoindent
 
 " --- Spaces/Tabs ---
@@ -62,3 +61,4 @@ autocmd BufEnter * :syntax sync fromstart
 colorscheme jonny
 autocmd BufRead *.txt set tw=78
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t
+let &colorcolumn="80,".join(range(120,999),",")

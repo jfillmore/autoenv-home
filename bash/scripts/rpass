@@ -3,84 +3,93 @@
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
-#===========================================================================
-
-function fail() {
-	echo "$@" >&2
-	exit 101
-}
-
-function usage() {
-	cat <<- EOI
-	usage: $SCRIPT_NAME num_passwords [args]
-
-	arguments:
-		-h|--help|-H      This information.
-		-v|--verbose      Print verbose debugging information to standard error.
-		-l|--length #     Password length (default: 8)
-	EOI
-}
-
-function : {
-	[ $# -gt 1 ] && fail ": function called with more than one arguments. This is unsafe to do."
-	if [ $verbose -eq 1 ]; then
-		echo "$@" >&2
-	fi
-}
-#--------------------------------------------------------------------------
-
-function generate_password() {
-	local password
-	local i
-	local j
-	for (( i = 0; i < $num_passwords; i++ )); do
-		password=''
-		for (( j = 0; j < length; j++ )); do
-			# "pick a random character bank"
-			char_bank=${char_banks[$(($RANDOM % ${#char_banks[*]}))]}
-			# "and add random chacter from that bank to the password"
-			password="$password${char_bank:$(($RANDOM % ${#char_bank})):1}"
-			: "partial password: $password"
-		done
-		echo "$password"
-	done
-}
-
-#===========================================================================
-
-# whether to be verbose in actions
-declare verbose=0
-# password length
-declare length=8
+declare verbose=0 # whether to be verbose in actions
+declare strong=0 # force inclusion of a few symbols?
+declare length=8 # default password length; tripled if strong
 # characters to be used for passwords
-declare -a char_banks=("$(echo {a..z} | tr -d ' ')" "$(echo {A..Z} | tr -d ' ')" "$(echo {0..9} | tr -d ' ')")
-# number of passwords to generate
-declare num_passwords=1
-# for *some* sanity checking
-declare max_length=65535
+declare chars="$(echo {a..z} | tr -d ' ')$(echo {A..Z} | tr -d ' ')$(echo {0..9} | tr -d ' ')"
+declare symbols='~!@#$%^&*()-+=/.,'
+declare num_passwords=1 # number of passwords to generate
+declare max_length=65535 # for *some* sanity checking
+
+#===========================================================================
+
+fail() {
+    echo "$@" >&2
+    exit 101
+}
+
+usage() {
+    cat << EOI
+usage: $SCRIPT_NAME num_passwords [args]
+
+arguments:
+    -h|--help|-H      This information.
+    -s|--strong       Include symbols in the password
+    -v|--verbose      Print verbose debugging information to standard error.
+    -l|--length #     Password length (default: 8)
+EOI
+}
+
+generate_password() {
+    local password
+    local i
+    local j
+    local index
+    # generate random chars, forcing 3 symbols if 'strong' is set; then we'll randomize the order
+    for (( i = 0; i < $num_passwords; i++ )); do
+        password=()
+        for (( j = 0; j < length; j++ )); do
+            if [ $strong -eq 1 -a $j -le 3 ]; then
+                index=$(($RANDOM % ${#symbols}))
+                password[${#password[*]}]="${symbols:$index:1}"
+            else
+                index=$(($RANDOM % ${#chars}))
+                password[${#password[*]}]="${chars:$index:1}"
+            fi
+        done
+        password=$(echo ${password[*]} \
+            | tr ' ' '\n' \
+            | perl -MList::Util -e 'print List::Util::shuffle <>' \
+            | tr -d '\n')
+        echo "$password"
+    done
+}
+
+#===========================================================================
+
+which perl &>/dev/null || fail "Failed to find 'perl'"
+
+custom_length=0 # if we customize the length we won't override it if --strong is used
 
 while [ $# -gt 0 ]; do
-	arg="$1"
-	shift
-	case "$arg" in
-		-h|--help|-H)
-			usage
-			exit
-			;;
-		-l|--length)
-			[ $# -ge 1 ] || fail "Please specify a password length to use."
-			length="$1"
-			shift
-			[[ $length -le $max_length && $length -ge 5 ]] || fail "Invalid input: '$length'. Password length must be between 5 and $max_length, inclusive."
-			;;
-		-v|--verbose)
-			verbose=1
-			;;
-		*)
-			[[ $arg -gt 0 && $arg -le 100 ]] || fail "Number of passwords must be between 1 and 100; can't use '$arg'."
-			num_passwords=$arg
-			;;
-	esac
+    arg="$1"
+    shift
+    case "$arg" in
+        -h|--help|-H)
+            usage
+            exit
+            ;;
+        -s|--strong)
+            strong=1
+            ;;
+        -l|--length)
+            [ $# -ge 1 ] || fail "Please specify a password length to use."
+            custom_length=1
+            length="$1"
+            shift
+            [ $length -le $max_length -a $length -ge 5 ] \
+                || fail "Invalid input: '$length'. Password length must be between 5 and $max_length, inclusive."
+            ;;
+        -v|--verbose)
+            verbose=1
+            ;;
+        *)
+            [[ $arg -gt 0 && $arg -le 100 ]] || fail "Number of passwords must be between 1 and 100; can't use '$arg'."
+            num_passwords=$arg
+            ;;
+    esac
 done
 
+[ $custom_length -eq 0 -a $strong -eq 1 ] && length=32
 generate_password

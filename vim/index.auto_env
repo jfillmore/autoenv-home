@@ -4,6 +4,7 @@
 0  61b3db1c52eb82145b5f8a60fc491b3b9a311f5e  ./.vim/bundle/ftdetect/typescript.vim
 0  2484b0270d63e8bd86777ff3d379dd01a9ebefa4  ./.vim/bundle/ftplugin/typescript.vim
 0  81934a3bb7d3ddba728f4ff1d291e077ba410d8e  ./.vim/bundle/indent/typescript.vim
+0  d6fed22a96f9c87ceaa7604fb87bc154b4d9a58a  ./.vim/bundle/me
 0  f2e896a8672703c91858a28757038d1253b2fb0e  ./.vim/bundle/README.md
 0  d3727c7058761a45a88d06b31f2b741f52ed37cd  ./.vim/bundle/syntax/typescript.vim
 0  1df2f285e505899944bc190adabb33dc6073e592  ./.vim/bundle/vimshot01.png

@@ -1,6 +1,7 @@
 " Vim Color File
-" Maintainer: Michael Wiseman (thestarslookdown at gmail dot com)
-" Last Change: August 11, 2005
+
+" get highlight group under cursor
+" let s = synID(line('.'), col('.'), 1) | echo synIDattr(s, 'name') . ' -> ' . synIDattr(synIDtrans(s), 'name')
 
 " Color Help Screens
 " h cterm-colors
@@ -33,6 +34,8 @@ if exists("syntax_on")
 endif
 
 let colors_name = "jonny"
+
+" http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html
 
 "hi x016_Grey0 ctermfg=16 guifg=#000000 "rgb=0,0,0
 "hi x017_NavyBlue ctermfg=17 guifg=#00005f "rgb=0,0,95
@@ -283,8 +286,8 @@ let colors_name = "jonny"
 hi Cursor ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
 hi CursorIM ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
 hi CursorLine ctermbg=235 guibg=#181818 gui=none cterm=none
-hi CursorColumn ctermbg=235
-hi ColorColumn ctermbg=234 cterm=bold
+hi CursorColumn ctermbg=236
+hi ColorColumn ctermbg=235 cterm=underline
 
 " Directory
 "hi Directory
@@ -416,6 +419,7 @@ hi Underlined cterm=underline gui=underline ctermfg=darkcyan guifg=#00AAAA
 
 " Error
 "hi Error
+hi Error ctermfg=red ctermbg=black
 
 " Todo
 hi Todo ctermfg=yellow guifg=#FFFF55 ctermbg=darkred guibg=#AA0000

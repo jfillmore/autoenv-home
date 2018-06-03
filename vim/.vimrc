@@ -17,6 +17,7 @@ set guioptions-=T
 set ruler
 set wrap
 
+set showmatch
 set relativenumber
 
 " --- Indendation ---

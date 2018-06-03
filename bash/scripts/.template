@@ -3,59 +3,69 @@
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
-fail() {
-    echo "$@" >&2
-    exit 1
-}
-
-rem() {
-    [ "$VERBOSE" -eq 1 ] && echo "+ [$@]" >&2
-}
-
 usage() {
     cat <<EOI
 Usage: $SCRIPT_NAME [ARGUMENTS]
 (e.g.)
 
 OPTIONS:
-    -d|--dry-run          Run without making any changes
+    -d|--dry-run|--dryrun Run without making any changes
     -h|--help             This information
     -v|--verbose          Print debugging information to stdout
 
+    -a|--arg VALUE        Example extra argument
+
 EXAMPLE:
 
-  \$ $SCRIPT_NAME
+  \$ $SCRIPT_NAME -v -d  # preview script actions w/o making changes
 EOI
 }
 
+fail() {
+    echo "! ${1-command failed}" >&2
+    exit ${2:-1}
+}
+
+rem() {
+    [ "$verbose" -eq 1 ] && echo "# $@" >&2
+}
+
 cmd() {
-    if [ $DRYRUN -eq 1 ]; then
+    local retval=0
+    if [ $dryrun -eq 1 ]; then
         echo "# $@"
     else
-        $@
-        [ $VERBOSE -eq 1 ] && echo "> $@" >&2
+        [ $verbose -eq 1 ] && echo "$   $@" >&2
+        "$@"
+        retval=$?
     fi
+    return $retval
 }
 
 # collect args
 # ==========================================
 
-VERBOSE=0
-DRYRUN=0
+verbose=0
+dryrun=0
 
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
     case "$arg" in 
-        --dry-run|-d)
-            DRYRUN=1
+        --dryrun|dry-run|-d)
+            dryrun=1
             ;;
         --verbose|-v)
-            VERBOSE=1
+            verbose=1
             ;;
         --help|-h)
             usage
             exit
+            ;;
+        --arg|-a)
+            [ $# -ge 1 ] || fail "Missing arg to --arg"
+            some_arg="$1"
+            shift
             ;;
         *)
             fail "Invalid argument: $arg"
@@ -63,3 +73,12 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+[ $dryrun -eq 1 ] && echo "# DRY-RUN" >&2
+
+file=".foo bar.$$"
+
+rem "listing a file as an example"
+[ -f "$file" ] && fail "'$file' exists already"
+touch "$file" || fail "failed to touch '$file'"
+cmd ls -la "$file"
+rm -f "$file"

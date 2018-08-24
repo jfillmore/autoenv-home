@@ -16,6 +16,7 @@ set guioptions-=m
 set guioptions-=T
 set ruler
 set wrap
+set backspace=indent,eol,start
 
 set showmatch
 set relativenumber
@@ -46,7 +47,8 @@ noremap <F4> :set paste!<CR>
 noremap <F5> :set relativenumber!<CR>
 " show/hide search highlighting
 noremap <F6> :set hlsearch!<CR>
-set backspace=indent,eol,start
+" refresh syntax highlighting
+noremap <F9> :syntax sync fromstart<CR>
 
 " --- Macros ---
 " git conflict highlighting
@@ -55,11 +57,14 @@ let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)'
 let @t = 'ddnVnxnz.'
 " git conflict - keep bottom portion of conflict
 let @b = 'Vnxnddnz.'
+" python breakpoint
+let @x = 'Oimport pdb; pdb.set_trace()'
 
 " --- Style ---
 syntax on
 autocmd BufEnter * :syntax sync fromstart
 colorscheme jonny
 autocmd BufRead *.txt set tw=78
+let c_minlines=4096
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t
 let &colorcolumn="80,".join(range(120,999),",")

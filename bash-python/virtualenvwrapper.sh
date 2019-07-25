@@ -88,7 +88,7 @@ then
     if [ -n "$BASH" ]
     then
         export VIRTUALENVWRAPPER_SCRIPT="$BASH_SOURCE"
-    elif [ -n "$ZSH_VERSION" ]
+    elif [ -n "${ZSH_VERSION:-}" ]
     then
         export VIRTUALENVWRAPPER_SCRIPT="$0"
     else
@@ -279,7 +279,7 @@ function virtualenvwrapper_setup_tab_completion {
         complete -o default -o nospace -F _virtualenvs rmvirtualenv
         complete -o default -o nospace -F _virtualenvs cpvirtualenv
         complete -o default -o nospace -F _virtualenvs showvirtualenv
-    elif [ -n "$ZSH_VERSION" ] ; then
+    elif [ -n "${ZSH_VERSION:-}" ] ; then
         _virtualenvs () {
             reply=( $(virtualenvwrapper_show_workon_options) )
         }
@@ -410,7 +410,7 @@ function mkvirtualenv {
 
     in_args=( "$@" )
 
-    if [ -n "$ZSH_VERSION" ]
+    if [ -n "${ZSH_VERSION:-}" ]
     then
         i=1
         tst="-le"
@@ -472,9 +472,9 @@ function mkvirtualenv {
     virtualenvwrapper_verify_workon_home || return 1
     virtualenvwrapper_verify_virtualenv || return 1
     (
-        [ -n "$ZSH_VERSION" ] && setopt SH_WORD_SPLIT
+        [ -n "${ZSH_VERSION:-}" ] && setopt SH_WORD_SPLIT
         virtualenvwrapper_cd "$WORKON_HOME" &&
-        "$VIRTUALENVWRAPPER_VIRTUALENV" $VIRTUALENVWRAPPER_VIRTUALENV_ARGS "$@" &&
+        "$VIRTUALENVWRAPPER_VIRTUALENV" ${VIRTUALENVWRAPPER_VIRTUALENV_ARGS:-} "$@" &&
         [ -d "$WORKON_HOME/$envname" ] && \
             virtualenvwrapper_run_hook "pre_mkvirtualenv" "$envname"
     )
@@ -692,7 +692,7 @@ function workon {
 
     in_args=( "$@" )
 
-    if [ -n "$ZSH_VERSION" ]
+    if [ -n "${ZSH_VERSION:-}" ]
     then
         i=1
         tst="-le"
@@ -787,11 +787,11 @@ function workon {
         old_env=$(basename "$VIRTUAL_ENV")
 
         # Call the original function.
-        virtualenv_deactivate $1
+        virtualenv_deactivate ${1:-}
 
         virtualenvwrapper_run_hook "post_deactivate" "$old_env"
 
-        if [ ! "$1" = "nondestructive" ]
+        if [ ! "${1:-}" = "nondestructive" ]
         then
             # Remove this function
             unset -f virtualenv_deactivate >/dev/null 2>&1
@@ -999,7 +999,7 @@ function cpvirtualenv {
 
     echo "Copying $src_name as $trg_name..."
     (
-        [ -n "$ZSH_VERSION" ] && setopt SH_WORD_SPLIT
+        [ -n "${ZSH_VERSION:-}" ] && setopt SH_WORD_SPLIT
         virtualenvwrapper_cd "$WORKON_HOME" &&
         "$VIRTUALENVWRAPPER_VIRTUALENV_CLONE" "$src" "$trg"
         [ -d "$trg" ] &&
@@ -1111,7 +1111,7 @@ function mkproject {
     in_args=( "$@" )
     force=0
 
-    if [ -n "$ZSH_VERSION" ]
+    if [ -n "${ZSH_VERSION:-}" ]
     then
         i=1
         tst="-le"
@@ -1214,10 +1214,12 @@ function mktmpenv {
     typeset RC
     typeset -a in_args
     typeset -a out_args
+    typeset -i i
+    typeset tst
 
     in_args=( "$@" )
 
-    if [ -n "$ZSH_VERSION" ]
+    if [ -n "${ZSH_VERSION:-}" ]
     then
         i=1
         tst="-le"

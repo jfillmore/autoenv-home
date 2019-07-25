@@ -1,4 +1,4 @@
-0  9bc7f29ba76f888109874ed1823c5843b2b5bff8  ./.bashrc
+0  a2ad50e14a71c76439112077ab2fbe2261e69da4  ./.bashrc
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
@@ -13,7 +13,8 @@
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  ac4dfc6748865a3ea4e7eccdac092a1dd6353850  ./scripts/rpass
 1  694ab991b038553eecf9373f37d85aa833fabaee  ./scripts/chomp
-1  23363b50c20e6218742446c4280f3151acb34de7  ./scripts/stats.py
-1  9d9bfbac7e6c5ab6584c6f7f8c4c2dd4db994edb  ./scripts/.template
+1  e2d3b7b2af1d0c5a7785a9243fe60b2be6e74ae6  ./scripts/stats.py
+1  42303336e9da8fe9ccfcd94d1a125e92ac0d2a19  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
-0  4b85523ccc318e16a2c2e5ac68005368467692f7  ./.bashrc.d/jkf.sh
+0  f9f7cfff11125657b750d989c26f2b1795cc3fda  ./index.autoenv.bak
+0  7a0b6845020e975026ecb89b5c5755f8ae5d4afe  ./.bashrc.d/jkf.sh

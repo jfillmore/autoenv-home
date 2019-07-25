@@ -3,7 +3,20 @@
 import math  
 import sys  
 import re
-  
+
+USAGE = r'''Usage: stats.py ARGS
+
+ARGS:
+   -h|--help         This information
+
+   dedupe_col=NUM    If given, ensure values in the column are unique; print
+                     separate stats for dupes
+   ifs_re=RE         Regex to use for column splitting; default='\s+'
+   has_headers=0|1   Whether input has headers to be skipped or not; default=0
+   dedupe_file=PATH  If given, dedupe_col is required and 'PATH.uniq' /
+                     'PATH.dupes' will be written for reference
+''' 
+
 
 def sd_calc(data):  
     n = len(data)  
@@ -149,6 +162,14 @@ def main(dedupe_col=None, ifs_re='\s+', has_headers=False, to_skip='', dedupe_fi
 if __name__ == '__main__':
     args = {}
     while len(sys.argv) > 1:
-        arg = sys.argv.pop().split('=')
-        args[arg[0]] = arg[1]
+        arg = sys.argv.pop()
+        if arg.startswith('-'):
+            if arg in ('-h', '--help'):
+                sys.stderr.write(USAGE + '\n');
+                sys.exit()
+            else:
+                raise Exception('Invalid arg: %s' % arg)
+        else:
+            parts = arg.split('=')
+            args[parts[0]] = parts[1]
     main(**args)

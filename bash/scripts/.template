@@ -3,69 +3,86 @@
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
+
+# functions
+# ==========================================
+
+fail() {
+    echo "${1-command failed}" >&2
+    exit ${2:-1}
+}
+
+rem() {
+    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+}
+
 usage() {
     cat <<EOI
 Usage: $SCRIPT_NAME [ARGUMENTS]
 (e.g.)
 
-OPTIONS:
-    -d|--dry-run|--dryrun Run without making any changes
+ARGUMENTS:
+
+    -a|--arg FOOVAL       Does something with FOOVAL
+    -b|--boolarg          Sets some flag
+    -d|--dry-run          Run without making any changes
     -h|--help             This information
     -v|--verbose          Print debugging information to stdout
 
-    -a|--arg VALUE        Example extra argument
-
 EXAMPLE:
 
-  \$ $SCRIPT_NAME -v -d  # preview script actions w/o making changes
+    \$ $SCRIPT_NAME
 EOI
 }
 
-fail() {
-    echo "! ${1-command failed}" >&2
-    exit ${2:-1}
-}
-
-rem() {
-    [ "$verbose" -eq 1 ] && echo "# $@" >&2
-}
-
 cmd() {
-    local retval=0
-    if [ $dryrun -eq 1 ]; then
-        echo "# $@"
+    if [ $DRYRUN -eq 1 ]; then
+        echo -e "\033[0;33;40m# $@\033[0;0m" >&2
     else
-        [ $verbose -eq 1 ] && echo "$   $@" >&2
+        [ $VERBOSE -eq 1 ] && echo -e "\033[0;33;40m> $(printf "'%s' " "$@")\033[0;0m" >&2
         "$@"
-        retval=$?
     fi
-    return $retval
+}
+
+prompt_yn() {
+    local msg="${1:-confinue?}"
+    local resp=''
+    while [ "$resp" != 'y' -a "$resp" != 'n' ]; do
+        read -p "$msg (y|n) > " resp
+    done
+    [ "$resp" = 'y' ] && return 0 || return 1
 }
 
 # collect args
 # ==========================================
 
-verbose=0
-dryrun=0
+VERBOSE=0
+DRYRUN=0
+
+bool_arg=0
+some_arg=
 
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
     case "$arg" in 
-        --dryrun|dry-run|-d)
-            dryrun=1
+        --dry-run|-d)
+            DRYRUN=1
             ;;
         --verbose|-v)
-            verbose=1
+            VERBOSE=1
             ;;
         --help|-h)
             usage
             exit
             ;;
         --arg|-a)
-            [ $# -ge 1 ] || fail "Missing arg to --arg"
+            [ $# -ge 1 ] || fail "Missing arg to --arg|-a"
             some_arg="$1"
             shift
+            ;;
+        --bool|-b)
+            bool_arg=1
             ;;
         *)
             fail "Invalid argument: $arg"
@@ -73,10 +90,11 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ $dryrun -eq 1 ] && echo "# DRY-RUN" >&2
+
+# script body
+# ==========================================
 
 file=".foo bar.$$"
-
 rem "listing a file as an example"
 [ -f "$file" ] && fail "'$file' exists already"
 touch "$file" || fail "failed to touch '$file'"

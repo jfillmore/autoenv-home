@@ -19,6 +19,7 @@ set wrap
 set backspace=indent,eol,start
 
 set showmatch
+set number " setting both causes the current line to be the line number, not 0
 set relativenumber
 
 " --- Indendation ---

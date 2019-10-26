@@ -14,12 +14,16 @@ function grim {
 } 
 
 if [ $UID -eq 0 ]; then
+    shell_sym='#'
+    host_clr='\033[1;33m'  # yellow
     alias l="ls -la"
-    export PS1="\[\033[1;30;40m# [\$(echo \$?)|\$(date)]\[\033[1;37m\][\[\033[1;33m\]\h \[\033[1;34m\]\w\[\033[1;37m\]]#\[\033[0m\] "
 else
-    export PS1="\[\033[1;30;40m# [\$(echo \$?)|\$(date)]\[\033[1;37m\][\[\033[1;31m\]\h \[\033[1;34m\]\w\[\033[1;37m\]]\$\[\033[0m\] "
+    shell_sym='$'
+    host_clr='\033[1;31m'  # red
     alias l="ls -l"
 fi
+export PS1="\[\033[1;30;40m# [\033[0;37;40m\$(echo \$?)\033[1;30;40m|\$(date)]\n\[\033[1;37m\][\[$host_clr\]\h \[\033[1;34m\]\w\[\033[1;37m\]]$shell_sym\[\033[0m\] "
+unset shell_sym host_clr
 
 alias grep="grep --color=auto"
 alias jdiff="diff -yb --suppress-common-lines"

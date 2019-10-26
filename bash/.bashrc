@@ -1,28 +1,21 @@
-# .bashrc
-
-# always load some common defaults
-
+# system bashrc
 if [ -f /etc/bashrc ]; then
     . /etc/bashrc
 fi
 
-# only load the extras if we're an interactive shell
-
+# local customizations for interative terminals
 if [[ "$-" =~ 'i' ]]; then
-
     if [ -f "$HOME/.bashrc.local" ]; then
         . "$HOME/.bashrc.local"
     fi
-
     if [ -d "$HOME/.bashrc.d/" ]; then
-        for __file in "$HOME"/.bashrc.d/*; do
-            # if no files exist this returns the un-globbed string
-            # also, just ignore empty stuff
-            if [ -s "$__file" ]; then
+        __files=$(find "$HOME/.bashrc.d" -maxdepth 1 \( -type f -o -type l \) \! -name .\*)
+        if [ ${#__files} -ge 1 ]; then
+            for __file in $__files; do
                 . "$__file"
-            fi
-        done
+            done
+        fi
+        unset __files
         unset __file
     fi
-
 fi

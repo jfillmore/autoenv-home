@@ -37,9 +37,10 @@ EOI
 
 cmd() {
     if [ $DRYRUN -eq 1 ]; then
-        echo -e "\033[0;33;40m# $@\033[0;0m" >&2
+        echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
     else
-        [ $VERBOSE -eq 1 ] && echo -e "\033[0;33;40m> $(printf "'%s' " "$@")\033[0;0m" >&2
+        [ $VERBOSE -eq 1 ] \
+            && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
         "$@"
     fi
 }

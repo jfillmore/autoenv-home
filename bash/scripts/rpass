@@ -4,10 +4,12 @@ BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
 declare verbose=0 # whether to be verbose in actions
+declare hex=0 # use hexadecimal values; conflicts w/ strong=1
 declare strong=0 # force inclusion of a few symbols?
 declare length=8 # default password length; tripled if strong
 # characters to be used for passwords
 declare chars="$(echo {a..z} | tr -d ' ')$(echo {A..Z} | tr -d ' ')$(echo {0..9} | tr -d ' ')"
+declare hexchars="$(echo {a..f} | tr -d ' ')$(echo {0..9} | tr -d ' ')"
 declare symbols='~!@#$%^&*()-+=/.,'
 declare num_passwords=1 # number of passwords to generate
 declare max_length=65535 # for *some* sanity checking
@@ -24,7 +26,8 @@ usage() {
 usage: $SCRIPT_NAME num_passwords [args]
 
 arguments:
-    -h|--help|-H      This information.
+    -h|--help         This information.
+    -H|--hex          Use hex values
     -s|--strong       Include symbols in the password
     -v|--verbose      Print verbose debugging information to standard error.
     -l|--length #     Password length (default: 8)
@@ -40,7 +43,10 @@ generate_password() {
     for (( i = 0; i < $num_passwords; i++ )); do
         password=()
         for (( j = 0; j < length; j++ )); do
-            if [ $strong -eq 1 -a $j -le 3 ]; then
+            if [ $hex -eq 1 ]; then
+                index=$(($RANDOM % ${#hexchars}))
+                password[${#password[*]}]="${hexchars:$index:1}"
+            elif [ $strong -eq 1 -a $j -le 3 ]; then
                 index=$(($RANDOM % ${#symbols}))
                 password[${#password[*]}]="${symbols:$index:1}"
             else
@@ -66,9 +72,12 @@ while [ $# -gt 0 ]; do
     arg="$1"
     shift
     case "$arg" in
-        -h|--help|-H)
+        -h|--help)
             usage
             exit
+            ;;
+        -H|--hex)
+            hex=1
             ;;
         -s|--strong)
             strong=1
@@ -91,5 +100,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+[ $hex -eq 1 -a $strong -eq 1 ] && fail "Cannot mix --hex and --strong options"
 [ $custom_length -eq 0 -a $strong -eq 1 ] && length=32
 generate_password

@@ -118,7 +118,7 @@ def main(dedupe_col=None, ifs_re='\s+', has_headers=False, to_skip='', dedupe_fi
                     nums.append(float(
                         ''.join(filter(
                             lambda a: a if a else None,
-                            re.split('[^-.0-9]', line)
+                            re.split('[^-.0-9]', num)
                         ))
                     ))
                     filtered[i] += 1

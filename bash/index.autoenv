@@ -1,6 +1,5 @@
 0  7f2bbf094c45ef301932a2666a55badeeede68e3  ./.bashrc
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
-0  f3c3d591e41708f4235d5efdd160090bbc999978  ./scripts/init_env
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
 1  7e08683b381675525d7ffb9dc7b48d7a78cd01d1  ./scripts/color.py
 1  a7964b2242dc27cfdaee50e65bd939a852ef7fec  ./scripts/pdf-split.sh
@@ -13,7 +12,6 @@
 0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  ./scripts/.init
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  f532e2adb1d1283441516e8cb89a44d7f6c025b1  ./scripts/rpass
-1  694ab991b038553eecf9373f37d85aa833fabaee  ./scripts/chomp
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  1d5ce9d23a2d5ceafdbb20a6c9f75ed5e52a83e3  ./scripts/stats.py
 1  ed92ba21b76a90263c12acc877aef456d313f251  ./scripts/.template

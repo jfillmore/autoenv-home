@@ -1,7 +1,0 @@
-#!/bin/bash -u
-
-git config --global push.default simple
-git config --global user.name 'Jonny Fillmore'
-git config --global user.email 'jonny@spamriot.com'
-echo "Setup keys"
-echo "etc"

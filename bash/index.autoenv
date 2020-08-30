@@ -9,7 +9,6 @@
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
 1  cf5dd952c7b90458cafa9b74d92372e0b36eec16  ./scripts/ssh_tun
 1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./scripts/grev
-0  51c85e5aaefe65f4ad01ec592af404775c0e2f95  ./scripts/.init
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  f532e2adb1d1283441516e8cb89a44d7f6c025b1  ./scripts/rpass
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh

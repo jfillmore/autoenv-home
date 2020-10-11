@@ -35,12 +35,14 @@ test_tun() {
 tunnel() {
     local cmd=ssh
     local args="$(ssh_args)"
+    local tuntype='-L'
+    [ $SSH_REVERSE -eq 1 ] && tuntype='-R'
     [ $DRYRUN -eq 1 -a $VERBOSE -eq 1 ] && cmd="echo $cmd"
 	$cmd \
         $args \
 		-N \
 		$SSH_USER@$SSH_HOST \
-		-L "$1" \
+		"$tuntype" "$1" \
 		&
 }
 
@@ -63,6 +65,7 @@ OPTIONS:
     -i|--ident FILE       SSH private key file
     -k|--keep-alive NUM   SSH keep-alive value (def: $SSH_KEEPALIVE sec)
     -p|--port PORT        SSH port (def: $SSH_PORT)
+    -R|--reverse          Use reverse SSH tunnels
     -t|--timeout NUM      SSH connect timeout (def: $SSH_TIMEOUT sec)
     -v|--verbose          Print debugging information to stdout
 
@@ -81,6 +84,7 @@ SSH_USER=''
 SSH_HOST=''
 SSH_KEY=''
 SSH_TUNNELS=''
+SSH_REVERSE=0
 VERBOSE=0
 DRYRUN=0
 
@@ -110,6 +114,9 @@ while [ $# -gt 0 ]; do
             ;;
         --dry-run|-d)
             DRYRUN=1
+            ;;
+        --reverse|-R)
+            SSH_REVERSE=1
             ;;
         --verbose|-v)
             VERBOSE=1
@@ -167,7 +174,7 @@ errors=0
 PIDS=()
 for tunnel in $SSH_TUNNELS; do
     local_port=$(echo "$tunnel" | awk -F':' '{print $1}')
-    if test_tun $local_port; then
+    if [ $SSH_REVERSE -eq 0 ] && test_tun $local_port; then
         fail "Local port $local_port is already open"
         let errors+=1
     else
@@ -182,10 +189,11 @@ for tunnel in $SSH_TUNNELS; do
         debug "Tunneling localhost:$local_port => $remote_host (PID: $tun_pid)"
         # wait a moment and verify that it worked... QQ at the delay
         sleep 2
-        [ $DRYRUN -eq 0 ] && {
+        [ $DRYRUN -eq 0 -a $SSH_REVERSE -eq 0 ] && {
             test_tun $local_port || {
                 let errors+=1
                 fail "Failed to verify SSH tunnel '$tunnel' -- check for auth errors."
+                kill "$tun_pid" &>/dev/null
             }
         }
     fi

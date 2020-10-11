@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import re
+import shutil
+import signal
+import sys
+import time
+
+
+# TODOS:
+# - time?
+# - auto-wrap vs truncate
+# - two speeds: super-fast for back-to-back reads, slower when data is fresh
+
+
+def usage():
+    usage = f"""
+USAGE: stail [ARGS] [FILE] [...FILE]
+
+Scroll-tail stdin or the file(s) specified using a fixed window of space.
+Unlike regular "tail", we always print the entire dataset and follow to the end
+of file or input. Truncates output to fit within the horizontal space instead
+of wrapping.
+
+Able to handle ANSI color codes to retain pretty output.
+
+ARGS:
+
+    -d|--delay MS    Delay between lines when scrolling (default: {LogPipe.DEF_DELAY})
+    -h|--help        This information!
+    -n|--number      Show line numbers
+    -s|--size NUM    Number of lines to display at a time (default: {LogPipe.DEF_SIZE})
+
+EXAMPLES:
+
+# slowly show IP address information in color
+$ curl -s ifconfig.co/json | jq -C | stail -d 200 -n 10
+"""
+    sys.stdout.write(usage.strip() + '\n')
+
+
+class LogPipe:
+    DEF_DELAY = 50
+    DEF_SIZE = 20
+
+    ansi_re = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    def __init__(self, size, delay, number):
+        self.size = size
+        self.buffer = []
+        self.offset = 0  # points to the >last< self.buffer entry
+        self.lines = 0
+        self.delay = delay  # ms between printing new lines
+        self.number = number
+        self.termsize = None
+        self.term_refresh()
+
+    def term_refresh(self, *signal_args):
+        self.termsize = shutil.get_terminal_size()
+
+    def add_line(self, line):
+        # first, fill up our buffer; we'll then start writing over old lines
+        self.lines += 1
+        if len(self.buffer) < self.size:
+            # can print line-by-line until we fill up
+            self.buffer.append(line)
+            self._print_line(line, self.lines)
+        else:
+            # once we're full we'll start printing the full buffer each time
+            self.buffer[self.offset] = line
+            self.print_buffer()
+        # print the first half right away before we start slow-scrolling
+        if self.delay and len(self.buffer) > self.size * .5:
+            time.sleep(self.delay / 1000)
+        # move our offset, wrapping as needed
+        self.offset += 1
+        if self.offset >= self.size:
+            self.offset = 0
+
+    def print_buffer(self):
+        # we always need to move up to overwrite earlier output
+        self._write('\033[%dA' % (self.size))
+        # e.g. first loop we need mark=1 so: 10 - 
+        mark = (self.size - (self.size - (self.offset + 1)))
+        # start printing from our current position to the end
+        line_no = self.lines - self.size
+        for i in range(mark, len(self.buffer)):
+            self._print_line(self.buffer[i], line_no)
+            line_no += 1
+        # now print any older entries at the start of our buffer
+        for i in range(0, mark):
+            self._print_line(self.buffer[i], line_no)
+            line_no += 1
+
+    def _print_line(self, line, line_no):
+        if self.number:
+            padding = len(str(self.lines + self.size))
+            line_no_format = '\033[1;30m%' + str(padding) + 'd:\033[0m '
+            padding += 2  # add extra due to ': '
+        else:
+            padding = 0
+            line_no_format = '%s'
+            line_no = ''
+        width = self.termsize.columns - padding
+        trimmed_line = self._ansi_trim(line, width)
+        output = line_no_format + '%s\033[0m\033[K\n'
+        self._write(output % (line_no, trimmed_line), flush=True)
+
+    @classmethod
+    def _ansi_trim(cls, line, width):
+        """
+        Trim a string to a specific width, accounting for ANSI codes that must
+        not be counted or truncated.
+        """
+        # easy out for many edge cases
+        if not line:
+            return line
+        # ...no funny cursor movement codes or we're SOL
+        codes = cls.ansi_re.findall(line)
+        parts = cls.ansi_re.split(line)
+        # we'll step through each part and stitch together as much as we can fit
+        len_ctr = 0
+        final_str = []
+        final_part = ''
+        # if we end in an ascii code we want to snag that now
+        if parts[-1] == '' and line:
+            final_part = codes.pop()
+            parts.pop()
+        for part in parts:
+            # blank strings indicate ansi sequences... usually
+            if not part:
+                if codes:
+                    final_str.append(codes.pop(0))
+                continue
+            # otherwise we have some text to consume, which MAY be too long
+            len_ctr += len(part)
+            if len_ctr >= width:
+                final_str.append(part[:len(part) - (len_ctr - width)])
+                break
+            else:
+                final_str.append(part)
+                if codes:
+                    final_str.append(codes.pop(0))
+        # if we have enough room, always add the last ansi code
+        if len_ctr < width:
+            if final_part:
+                final_str.append(final_part)
+            else:
+                # otherwise, bugger any remaining codes and just do a reset
+                final_str.append('\033[0m')
+        return ''.join(final_str)
+
+    def _write(self, data, flush=False):
+        sys.stdout.write(data)
+        if flush:
+            sys.stdout.flush()
+
+
+def main(size, delay, number, files):
+    logpipe = LogPipe(size, delay, number)
+    signal.signal(signal.SIGWINCH, logpipe.term_refresh)
+    if not files:
+        infiles = [sys.stdin]
+    else:
+        infiles = [
+            open(path, 'r')
+            for path in files
+        ]
+    for infile in infiles:
+        while True:
+            data = infile.readline()
+            if not data:
+                # no need to close stdin...
+                if files:
+                    infile.close()
+                break
+            # we have to strip BOTH newlines or stuff gets screwy!
+            logpipe.add_line(data.strip('\n').strip('\r'))
+
+
+if __name__ == '__main__':
+    args = {
+        'size': LogPipe.DEF_SIZE,
+        'delay': LogPipe.DEF_DELAY,
+        'number': False,
+        'files': [],
+    }
+    user_args = sys.argv[1:]
+    try:
+        while user_args:
+            arg = user_args.pop(0)
+            if arg == '--help' or arg == '-h':
+                usage()
+                sys.exit()
+            elif arg == '--delay' or arg == '-d':
+                if not user_args:
+                    raise Exception('Missing arg to --delay|-d')
+                delay = int(user_args.pop(0))
+                if delay < 0 or delay > 5000:
+                    raise Exception('Delay must be between 0 and 5000')
+                args['delay'] = delay
+            elif arg == '--number' or arg == '-n':
+                args['number'] = True
+            elif arg == '--size' or arg == '-s':
+                if not user_args:
+                    raise Exception('Missing arg to --size|-s')
+                size = int(user_args.pop(0))
+                if size < 1 or size > 200:
+                    raise Exception('Size must be between 1 and 200')
+                args['size'] = size
+            else:
+                if not os.path.isfile(arg):
+                    raise Exception(f'File "{arg}" not found or cannot be read')
+                args['files'].append(arg)
+        # now with everything read... action time!
+        main(**args)
+    except Exception as e:
+        raise e
+        sys.stderr.write('Error: ' + str(e) + '\n')
+        sys.exit(1)

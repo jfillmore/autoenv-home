@@ -7,12 +7,13 @@
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
-1  cf5dd952c7b90458cafa9b74d92372e0b36eec16  ./scripts/ssh_tun
+1  8ee9ffe3dc9e1dd86df91e2e348c7149ee48e91a  ./scripts/ssh_tun
 1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./scripts/grev
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
 1  f532e2adb1d1283441516e8cb89a44d7f6c025b1  ./scripts/rpass
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  1d5ce9d23a2d5ceafdbb20a6c9f75ed5e52a83e3  ./scripts/stats.py
-1  ed92ba21b76a90263c12acc877aef456d313f251  ./scripts/.template
+1  41ef189171ce054995acb9e3de89e5b89146f563  ./scripts/stail
+1  35285a2b218a93a250b1606480687d01e41a13ca  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
 0  5f36e0c836f0f82581881f0fce42f1840e3e1ea6  ./.bashrc.d/jkf.sh

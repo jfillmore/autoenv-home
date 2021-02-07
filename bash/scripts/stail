@@ -12,7 +12,6 @@ import time
 # TODOS:
 # - time?
 # - auto-wrap vs truncate
-# - two speeds: super-fast for back-to-back reads, slower when data is fresh
 
 
 def usage():
@@ -29,6 +28,7 @@ Able to handle ANSI color codes to retain pretty output.
 ARGS:
 
     -d|--delay MS    Delay between lines when scrolling (default: {LogPipe.DEF_DELAY})
+    -f|--fast-mode   Scroll through initial reads quickly; even faster if repeated
     -h|--help        This information!
     -n|--number      Show line numbers
     -s|--size NUM    Number of lines to display at a time (default: {LogPipe.DEF_SIZE})
@@ -59,7 +59,7 @@ class LogPipe:
     def term_refresh(self, *signal_args):
         self.termsize = shutil.get_terminal_size()
 
-    def add_line(self, line):
+    def add_line(self, line, force_delay=None):
         # first, fill up our buffer; we'll then start writing over old lines
         self.lines += 1
         if len(self.buffer) < self.size:
@@ -72,7 +72,7 @@ class LogPipe:
             self.print_buffer()
         # print the first half right away before we start slow-scrolling
         if self.delay and len(self.buffer) > self.size * .5:
-            time.sleep(self.delay / 1000)
+            time.sleep(force_delay if force_delay is not None else self.delay / 1000)
         # move our offset, wrapping as needed
         self.offset += 1
         if self.offset >= self.size:
@@ -157,7 +157,7 @@ class LogPipe:
             sys.stdout.flush()
 
 
-def main(size, delay, number, files):
+def main(size, delay, fast_mode, number, files):
     logpipe = LogPipe(size, delay, number)
     signal.signal(signal.SIGWINCH, logpipe.term_refresh)
     if not files:
@@ -167,16 +167,25 @@ def main(size, delay, number, files):
             open(path, 'r')
             for path in files
         ]
+    force_delay = None
     for infile in infiles:
         while True:
+            time_start = time.time()
             data = infile.readline()
+            time_end = time.time()
             if not data:
                 # no need to close stdin...
                 if files:
                     infile.close()
                 break
+            if fast_mode:
+                if time_end - time_start < 0.5:
+                    force_delay = 0.005 if fast_mode == 1 else 0
+                else:
+                    fast_mode = 0
+                    force_delay = None
             # we have to strip BOTH newlines or stuff gets screwy!
-            logpipe.add_line(data.strip('\n').strip('\r'))
+            logpipe.add_line(data.strip('\n').strip('\r'), force_delay)
 
 
 if __name__ == '__main__':
@@ -184,6 +193,7 @@ if __name__ == '__main__':
         'size': LogPipe.DEF_SIZE,
         'delay': LogPipe.DEF_DELAY,
         'number': False,
+        'fast_mode': 0,
         'files': [],
     }
     user_args = sys.argv[1:]
@@ -200,6 +210,11 @@ if __name__ == '__main__':
                 if delay < 0 or delay > 5000:
                     raise Exception('Delay must be between 0 and 5000')
                 args['delay'] = delay
+            elif arg == '--fast-mode' or arg.startswith('-f'):
+                if arg.startswith('-f'):
+                    args['fast_mode'] += len(arg) - 1
+                else:
+                    args['fast_mode'] += 1
             elif arg == '--number' or arg == '-n':
                 args['number'] = True
             elif arg == '--size' or arg == '-s':

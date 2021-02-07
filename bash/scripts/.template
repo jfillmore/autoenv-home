@@ -1,4 +1,4 @@
-#!/bin/sh -u
+#!/bin/bash -u
 
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
@@ -27,7 +27,7 @@ ARGUMENTS:
     -b|--boolarg          Sets some flag
     -d|--dry-run          Run without making any changes
     -h|--help             This information
-    -v|--verbose          Print debugging information to stdout
+    -v|--verbose          Print debugging information to stdout (repeatable)
 
 EXAMPLE:
 
@@ -71,8 +71,10 @@ while [ $# -gt 0 ]; do
         --dry-run|-d)
             DRYRUN=1
             ;;
-        --verbose|-v)
-            VERBOSE=1
+        --verbose|-v*)
+            [ "${arg:0:2}" = '--' ] \
+                && VERBOSE=$((VERBOSE + 1)) \
+                || VERBOSE=$((VERBOSE + ${#arg} - 1))
             ;;
         --help|-h)
             usage

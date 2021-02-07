@@ -285,9 +285,9 @@ let colors_name = "jonny"
 " Cursors
 hi Cursor ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
 hi CursorIM ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
-hi CursorLine ctermbg=235 guibg=#181818 gui=none cterm=none
-hi CursorColumn ctermbg=236
-hi ColorColumn ctermbg=235 cterm=underline
+hi CursorLine ctermbg=234 guibg=#181818 gui=bold cterm=bold
+hi CursorColumn ctermbg=233
+hi ColorColumn ctermbg=232
 
 " Directory
 "hi Directory
@@ -420,6 +420,7 @@ hi Underlined cterm=underline gui=underline ctermfg=darkcyan guifg=#00AAAA
 " Error
 "hi Error
 hi Error ctermfg=red ctermbg=black
+hi BadWhitespace ctermbg=darkblue
 
 " Todo
 hi Todo ctermfg=yellow guifg=#FFFF55 ctermbg=darkred guibg=#AA0000

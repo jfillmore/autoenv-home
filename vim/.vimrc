@@ -1,8 +1,16 @@
 " --- Plugins ---
-filetype off
-execute pathogen#infect()
-call pathogen#helptags()
-filetype plugin indent on
+" https://github.com/junegunn/vim-plug
+" TL;DR: run `:PlugUpdate~ to install/update plugins defined below
+call plug#begin('~/.vim/plugged')
+Plug 'https://github.com/davidhalter/jedi-vim'
+call plug#end()
+
+
+" --- Plugin Settings ---
+let g:jedi#use_splits_not_buffers = "right"
+let g:jedi#popup_on_dot = 0
+let g:jedi#show_call_signatures = "2"
+let g:jedi#show_call_signatures_delay = 200
 
 
 " --- General ---
@@ -23,14 +31,21 @@ set ruler
 set viminfo='20,\"50
 set wrap
 
+set noshowmode  " required for show_call_signatures = 2
 set showmatch
 set number " setting both causes the current line to be the line number, not 0
 set relativenumber
 
 
 " --- Indendation ---
-"set smartindent  " assumes c-style which forces #-style comments to be left-aligned
+set cindent
+set smartindent  " assumes c-style which forces #-style comments to be left-aligned
 set autoindent
+
+" avoid double indentation shenanigans
+let g:pyindent_nested_paren = '&sw'
+let g:pyindent_open_paren = '&sw'
+
 
 
 " --- Spaces/Tabs ---
@@ -45,7 +60,8 @@ set noeol " no EOL at end of files
 " --- Hacks/Fixes ---
 " disable auto-indentation/commenting when adding to lines below existing comments
 set formatoptions-=cro
-"inoremap # x# " don't force comments to start of line when smartindent is on
+" don't force comments to start of line when smartindent is on
+inoremap # x#
 fixdel
 
 
@@ -58,11 +74,12 @@ nnoremap <F5> :set relativenumber!<CR>
 nnoremap <F6> :set hlsearch!<CR>
 " refresh syntax highlighting
 nnoremap <F9> :syntax sync fromstart<CR>
-" faster moves between splits
+" faster split manipulation
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
+nnoremap <C-C> <C-W><C-C>
 
 
 " --- Macros ---

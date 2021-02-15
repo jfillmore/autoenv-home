@@ -1,13 +1,5 @@
-0  81934a3bb7d3ddba728f4ff1d291e077ba410d8e  ./.vim/bundle/indent/typescript.vim
-0  2484b0270d63e8bd86777ff3d379dd01a9ebefa4  ./.vim/bundle/ftplugin/typescript.vim
-0  61b3db1c52eb82145b5f8a60fc491b3b9a311f5e  ./.vim/bundle/ftdetect/typescript.vim
-0  f2e896a8672703c91858a28757038d1253b2fb0e  ./.vim/bundle/README.md
-0  d6fed22a96f9c87ceaa7604fb87bc154b4d9a58a  ./.vim/bundle/me
-0  d3727c7058761a45a88d06b31f2b741f52ed37cd  ./.vim/bundle/syntax/typescript.vim
-0  1df2f285e505899944bc190adabb33dc6073e592  ./.vim/bundle/vimshot01.png
-0  f38fef4b2e856c034abd37f4ac88796cf59a25b2  ./.vim/bundle/compiler/typescript.vim
-0  977c08a03f05244dfa6d445e7f8193084536542b  ./.vim/colors/jonny.vim
-0  b099d37ff87054d2b22292bb4e037bd7f69fdf88  ./.vim/autoload/pathogen.vim
-0  30918f58b4409dc2f00482a771ca2288b0cc8ff9  ./.vim/autoload/localrc.vim
+0  7c0dd4fe7fe3776208f4596eb2918f69ab87d2bd  ./.vim/colors/jonny.vim
+0  3436446f155895ba3d9af676b4d181ce720e7ecc  ./.vim/autoload/plug.vim
+0  2734a0cdd15155b978cebf185052585dfbe15dc1  ./.vim/after/syntax/sh.vim
 0  c4bbcebf29f05cf0e8e26e5356527b5d4f7adaf0  ./.vim/localrc.vim
-0  5d83e6ccf13f385248cf983463fd4050f9dba16c  ./.vimrc
+0  c6e3eb9ff5d478d5e3767eadb90a93e56cb4a95b  ./.vimrc

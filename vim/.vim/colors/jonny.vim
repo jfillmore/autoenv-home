@@ -285,9 +285,9 @@ let colors_name = "jonny"
 " Cursors
 hi Cursor ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
 hi CursorIM ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
-hi CursorLine ctermbg=234 guibg=#181818 gui=bold cterm=bold
-hi CursorColumn ctermbg=233
-hi ColorColumn ctermbg=232
+hi CursorLine ctermbg=234 guibg=#282828 gui=underline cterm=underline
+hi CursorColumn ctermbg=233 guibg=#181818
+hi ColorColumn ctermbg=232 guibg=#382828
 
 " Directory
 "hi Directory
@@ -347,7 +347,7 @@ hi Search ctermbg=darkblue guibg=#0000AA ctermfg=lightcyan guifg=#55FFFF
 
 " Tab bar
 hi TabLineFill ctermfg=grey ctermbg=white
-hi TabLine ctermfg=black ctermbg=grey
+hi TabLine ctermfg=yellow ctermbg=grey
 hi TabLineSel ctermfg=white ctermbg=darkgrey
 
 " Title
@@ -420,16 +420,23 @@ hi Underlined cterm=underline gui=underline ctermfg=darkcyan guifg=#00AAAA
 " Error
 "hi Error
 hi Error ctermfg=red ctermbg=black
-hi BadWhitespace ctermbg=darkblue
+hi BadWhitespace ctermbg=darkblue guibg=#333399
 
 " Todo
 hi Todo ctermfg=yellow guifg=#FFFF55 ctermbg=darkred guibg=#AA0000
 
 " PMenu
-hi Pmenu ctermfg=grey guifg=#AAAAAA ctermbg=darkblue guibg=#0000AA
-hi PmenuSel ctermfg=black guifg=#000000 cterm=underline gui=underline ctermbg=grey guibg=#AAAAAA
-hi PmenuSbar ctermfg=lightcyan guifg=#55FFFF ctermbg=black guibg=#000000
-hi PmenuThumb ctermfg=cyan guifg=#55FFFF ctermbg=darkblue guibg=#0000AA
+hi Pmenu ctermfg=yellow guifg=#AAAAAA ctermbg=darkcyan guibg=#0000AA
+hi PmenuSel ctermfg=black guifg=#000000 cterm=underline gui=underline ctermbg=darkyellow guibg=#AAAAAA
+hi PmenuSbar ctermfg=lightcyan guifg=#55FFFF ctermbg=grey guibg=#000000
+hi PmenuThumb ctermfg=cyan guifg=#55FFFF ctermbg=yellow guibg=#0000AA
 
 " HTML
 hi htmlItalic ctermbg=black
+
+
+"------------------------------------------------------------------------------
+" Jedi Autocompletion
+"------------------------------------------------------------------------------
+hi jediFunction ctermbg=black ctermfg=white
+hi jediFat  ctermbg=cyan ctermfg=black

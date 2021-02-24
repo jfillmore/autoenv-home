@@ -1,8 +1,9 @@
 " --- Plugins ---
 " https://github.com/junegunn/vim-plug
-" TL;DR: run `:PlugUpdate~ to install/update plugins defined below
+" TL;DR: run `:PlugInstall` and `:PlugUpdate` to install/update plugins below:
 call plug#begin('~/.vim/plugged')
 Plug 'https://github.com/davidhalter/jedi-vim'
+Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
 call plug#end()
 
 

@@ -1,7 +1,10 @@
 #!/bin/bash -u
 
+# misc globals
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
+VERBOSE=0
+DRYRUN=0
 
 
 # functions
@@ -37,10 +40,10 @@ EOI
 
 cmd() {
     if [ $DRYRUN -eq 1 ]; then
-        echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
+        echo -e "\033[0;33;40m# $(printf "%q " "$@")\033[0;0m" >&2
     else
         [ $VERBOSE -eq 1 ] \
-            && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
+            && echo -e "\033[0;33;40m# $(printf "%q " "$@")\033[0;0m" >&2
         "$@"
     fi
 }
@@ -57,9 +60,6 @@ prompt_yn() {
 
 # collect args
 # ==========================================
-
-VERBOSE=0
-DRYRUN=0
 
 bool_arg=0
 some_arg=

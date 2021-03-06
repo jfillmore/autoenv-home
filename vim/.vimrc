@@ -1,3 +1,8 @@
+"
+" TODO:
+" - autoindent sucks for non-python
+" - autocomplete doesn't select first option by default on forward search
+
 " --- Plugins ---
 " https://github.com/junegunn/vim-plug
 " TL;DR: run `:PlugInstall` and `:PlugUpdate` to install/update plugins below:

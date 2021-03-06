@@ -2,4 +2,4 @@
 0  3436446f155895ba3d9af676b4d181ce720e7ecc  ./.vim/autoload/plug.vim
 0  2734a0cdd15155b978cebf185052585dfbe15dc1  ./.vim/after/syntax/sh.vim
 0  c4bbcebf29f05cf0e8e26e5356527b5d4f7adaf0  ./.vim/localrc.vim
-0  2d5dcf2adc6db8f69871e30e0091b5159e317dd0  ./.vimrc
+0  f0527a44eef87378667fa67a895ef7d7b8c89f34  ./.vimrc

@@ -322,7 +322,7 @@ hi StatusLineNC ctermbg=grey guibg=#aaaaaa ctermfg=black guifg=#000000 cterm=non
 "hi IncSearch
 
 " Line Number
-hi LineNr ctermfg=grey guifg=#666666 cterm=none gui=none
+hi LineNr ctermfg=grey ctermbg=233 guifg=#666666 cterm=none gui=none
 
 " Mode Message
 "hi ModeMsg

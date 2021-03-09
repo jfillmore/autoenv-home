@@ -1,8 +1,3 @@
-"
-" TODO:
-" - autoindent sucks for non-python
-" - autocomplete doesn't select first option by default on forward search
-
 " --- Plugins ---
 " https://github.com/junegunn/vim-plug
 " TL;DR: run `:PlugInstall` and `:PlugUpdate` to install/update plugins below:
@@ -14,7 +9,8 @@ call plug#end()
 
 " --- Plugin Settings ---
 let g:jedi#use_splits_not_buffers = "right"
-let g:jedi#popup_on_dot = 0
+let g:jedi#popup_on_dot = 0  " avoid annoying/slow automatic completion
+let g:jedi#popup_select_first = 0  " auto-select first match on forward autocomplete (but what about back?)
 let g:jedi#show_call_signatures = "2"
 let g:jedi#show_call_signatures_delay = 200
 
@@ -35,7 +31,6 @@ set nocompatible
 set redrawtime=8000
 set ruler
 set viminfo='20,\"50
-set wrap
 
 set noshowmode  " required for show_call_signatures = 2
 set showmatch
@@ -44,7 +39,7 @@ set relativenumber
 
 
 " --- Indendation ---
-set cindent
+"set cindent
 set smartindent  " assumes c-style which forces #-style comments to be left-aligned
 set autoindent
 
@@ -104,7 +99,7 @@ let @x = 'Oimport pdb; pdb.set_trace()'
 syntax on
 autocmd BufEnter * :syntax sync fromstart
 autocmd BufEnter,BufRead,BufNewFile * match BadWhitespace /\s\+$/
-autocmd BufRead *.txt set tw=78
+autocmd BufRead,BufNewFile *.dhtml set syntax=html
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t
 colorscheme jonny
 let c_minlines=4096

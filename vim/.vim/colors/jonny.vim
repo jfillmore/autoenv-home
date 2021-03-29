@@ -285,9 +285,9 @@ let colors_name = "jonny"
 " Cursors
 hi Cursor ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
 hi CursorIM ctermbg=red guibg=#AA0000 ctermfg=white guifg=#FFFFFF
-hi CursorLine ctermbg=234 guibg=#282828 gui=underline cterm=underline
-hi CursorColumn ctermbg=233 guibg=#181818
-hi ColorColumn ctermbg=232 guibg=#382828
+hi CursorLine ctermbg=236 guibg=#282828 gui=underline cterm=underline
+hi CursorColumn ctermbg=234 guibg=#181818
+hi ColorColumn ctermbg=235 guibg=#382828
 
 " Directory
 "hi Directory

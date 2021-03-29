@@ -1,5 +1,5 @@
 0  7f2bbf094c45ef301932a2666a55badeeede68e3  ./.bashrc
-1  1264f1456405b3c2391fb527255625cba883eb69  ./scripts/repeat.sh
+1  d119bbe93fb3fae1307ae966d0bb5fb6d42b3c26  ./scripts/repeat.sh
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 0  ddcbefbfa38ea60343f8748872e9ca20355fd7b0  ./scripts/repeat
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
@@ -16,6 +16,6 @@
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  1d5ce9d23a2d5ceafdbb20a6c9f75ed5e52a83e3  ./scripts/stats.py
 1  41f706396f92d49dfe19cf517f4120068098e261  ./scripts/stail
-0  64f35a02b70904fe4df7746d729faf660523b7ef  ./scripts/.template
+0  97cded842cfcd55dd30c4f06f46310938638b307  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
 0  8eb98b378156535409230fcf2105aa14e6d99d9a  ./.bashrc.d/jkf.sh

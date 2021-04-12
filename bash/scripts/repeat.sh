@@ -51,7 +51,7 @@ line_break="$line_break$line_break$line_break"
 # print initial start header
 cols=$(tput cols)
 echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
-echo -e "\033[1A\033[3C \033[1;37m$(date)\033[0m \n"
+echo -e "\033[1A\033[3C \033[1;37m$(date)\033[0m "
 
 # loop forever-ish!
 while true; do
@@ -74,7 +74,7 @@ while true; do
     # print footer + prompt
     cols=$(tput cols)
     echo -e "\n\033[${color_line}m╙${line_break:0:cols-1}\033[1D╜\033[0m"
-    echo -e "\033[1A\033[3C \033[1;32m$(date)\033[0;32m [$((time_end - time_start)) s]\033[0m "
+    echo -e "\033[1A\033[3C \033[${color_msg}m$(date)\033[${color_line}m [$((time_end - time_start)) s]\033[0m "
     echo -en " \033[${color_msg}m  -- $msg -- \033[0m"
     echo -ne "\033[${color_line}m│\033[1;37m  (\033[1;33m\\\n\033[0;37m to repeat, \033[1;33m^c\033[0;37m to quit) "
 

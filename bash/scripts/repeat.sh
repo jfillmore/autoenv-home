@@ -58,8 +58,8 @@ while true; do
     # run command and prep output
     time_start=$(date +%s)
     "$@"
-    time_end=$(date +%s)
     retval=$?
+    time_end=$(date +%s)
     [ $retval -eq 0 -a $repeat_fail_only -eq 1 ] && exit
     if [ $retval -eq 0 ]; then
         msg='SUCCESS'

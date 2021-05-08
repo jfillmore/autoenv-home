@@ -4,6 +4,10 @@ BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
 
+# TODO:
+# repeat mode: quiet, bell, "say", etc
+# fullscreen mode
+
 
 usage() {
     cat <<EOI
@@ -11,14 +15,19 @@ Usage: $SCRIPT_NAME [ARGS] [CMD] [CMD_ARGS...]
 
 ARGS:
 
-    --help|-h       This information
-    -1              Repeat only if there was a failure
+    -h|--help        This information
+    -f|--fullscreen  Fullscreen mode using alternative buffer (e.g. like vim)
+    -1               Repeat only if there was a failure
 
 Arguments must be given up front. All other args are used to run the final
 command.
 EOI
 }
 
+cleanup_screen() {
+    # currenly only called via `trap ... EXIT` on fullscreen mode
+    tput rmcup
+}
 
 fail() {
     echo "${1-$SCRIPT_NAME command failed}" >&2
@@ -31,27 +40,48 @@ fail() {
     fail 'no arguments given'
 }
 
-# handle what few args we take
+# handle what few args we take, which all must be leading the command.
 repeat_fail_only=0
-case "$1" in
-    --help|-h)
-        usage
-        exit
-        ;;
-    -1):
-        repeat_fail_only=1
-        shift
-        ;;
-esac
+fullscreen=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit
+            ;;
+        -f|--fullscreen)
+            fullscreen=1
+            ;;
+        -1)
+            repeat_fail_only=1
+            ;;
+        *)
+            break
+            ;;
+    esac
+    shift
+done
 
+
+# setup hacks
+# ==============================================================================
 # repeat, prompting each time, as long as needed; 80 chars per block
 line_break='────────────────────────────────────────────────────────────────────────────────'
 line_break="$line_break$line_break$line_break"
 
+[ $fullscreen -eq 1 ] && {
+    tput smcup || fail "failed to enter fullscreen/alt buffer mode"
+    trap cleanup_screen EXIT
+}
+
+
+# setup hacks
+# ==============================================================================
 # print initial start header
+loop=1
 cols=$(tput cols)
 echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
-echo -e "\033[1A\033[3C \033[1;37m$(date)\033[0m "
+echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 
 # loop forever-ish!
 while true; do
@@ -83,8 +113,16 @@ while true; do
     read
     stty echo &>/dev/null
 
+    # clear if fullscreen; else just add some buffering between commands
+    if [ $fullscreen -eq 1 ]; then
+        tput clear
+    else
+        echo -e "\n\n"
+    fi
+
     # print next header
+    let loop+=1
     cols=$(tput cols)
-    echo -e "\n\n\n\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
-    echo -e "\033[1A\033[3C \033[1;37m$(date)\033[0m \n"
+    echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
+    echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 done

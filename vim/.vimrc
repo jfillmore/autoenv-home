@@ -6,6 +6,7 @@ Plug 'https://github.com/davidhalter/jedi-vim'
 Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
 call plug#end()
 
+" `:verbose set tabstop? softtabstop? shiftwidth?` = help figure out settings
 
 " --- Plugin Settings ---
 let g:jedi#use_splits_not_buffers = "right"
@@ -67,7 +68,7 @@ inoremap # x#
 fixdel
 
 
-" --- Shortcuts ---
+" --- Generic Shortcuts ---
 " make it easy to paste formatted text
 nnoremap <F4> :set paste!<CR>
 " show/hide relative line numbers
@@ -82,6 +83,7 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 nnoremap <C-C> <C-W><C-C>
+nnoremap <leader>. :source ~/.vimrc<CR>
 
 
 " --- Macros ---
@@ -103,4 +105,4 @@ autocmd BufRead,BufNewFile *.dhtml set syntax=html
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t
 colorscheme jonny
 let c_minlines=4096
-let &colorcolumn="80,".join(range(120,999),",")
+let &colorcolumn="81"

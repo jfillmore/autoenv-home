@@ -7,15 +7,6 @@ SCRIPT_NAME=$(basename "$0")
 # functions
 # ==========================================
 
-fail() {
-    echo "${1-$SCRIPT_NAME command failed}" >&2
-    exit ${2:-1}
-}
-
-rem() {
-    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
-}
-
 usage() {
     cat <<EOI
 Usage: $SCRIPT_NAME [ARGUMENTS]
@@ -35,6 +26,25 @@ EXAMPLE:
 EOI
 }
 
+# Clean-up logic on script exit (including errors!)
+cleanup() {
+    true
+}
+
+
+# Fail and quit w/ the error given
+fail() {
+    echo "${1-$SCRIPT_NAME command failed}" >&2
+    exit ${2:-1}
+}
+
+# Print a comment
+rem() {
+    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+}
+
+# Command runner that can print a quoted version out first; skips execution w/
+# DRYRUN=1
 cmd() {
     if [ $DRYRUN -eq 1 ]; then
         echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
@@ -45,6 +55,7 @@ cmd() {
     fi
 }
 
+# Quick y/n prompt w/ an optional message
 prompt_yn() {
     local msg="${1:-confinue?}"
     local resp=''
@@ -92,6 +103,11 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+
+# prep & error checking
+# ==========================================
+trap cleanup EXIT
 
 
 # script body

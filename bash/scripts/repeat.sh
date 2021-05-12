@@ -6,7 +6,6 @@ SCRIPT_NAME=$(basename "$0")
 
 # TODO:
 # repeat mode: quiet, bell, "say", etc
-# fullscreen mode
 
 
 usage() {
@@ -17,6 +16,7 @@ ARGS:
 
     -h|--help        This information
     -f|--fullscreen  Fullscreen mode using alternative buffer (e.g. like vim)
+    -v|--verbose     Include extra output each iteration
     -1               Repeat only if there was a failure
 
 Arguments must be given up front. All other args are used to run the final
@@ -43,6 +43,7 @@ fail() {
 # handle what few args we take, which all must be leading the command.
 repeat_fail_only=0
 fullscreen=0
+verbose=0
 while [ $# -gt 0 ]; do
     case "$1" in
         -h|--help)
@@ -51,6 +52,9 @@ while [ $# -gt 0 ]; do
             ;;
         -f|--fullscreen)
             fullscreen=1
+            ;;
+        -v|--verbose)
+            verbose=1
             ;;
         -1)
             repeat_fail_only=1
@@ -80,6 +84,8 @@ line_break="$line_break$line_break$line_break"
 # print initial start header
 loop=1
 cols=$(tput cols)
+[ $verbose -eq 1 ] \
+    && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m"
 echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
 echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 
@@ -123,6 +129,8 @@ while true; do
     # print next header
     let loop+=1
     cols=$(tput cols)
+    [ $verbose -eq 1 ] \
+        && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m"
     echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"
     echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 done

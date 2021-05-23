@@ -4,6 +4,7 @@
 call plug#begin('~/.vim/plugged')
 Plug 'https://github.com/davidhalter/jedi-vim'
 Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
+Plug 'https://github.com/ctrlpvim/ctrlp.vim'
 call plug#end()
 
 " `:verbose set tabstop? softtabstop? shiftwidth?` = help figure out settings

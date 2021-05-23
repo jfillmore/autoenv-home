@@ -17,6 +17,7 @@ ARGS:
     -h|--help        This information
     -f|--fullscreen  Fullscreen mode using alternative buffer (e.g. like vim)
     -v|--verbose     Include extra output each iteration
+    -N|--null        Null mode = don't actually repeat
     -1               Repeat only if there was a failure
 
 Arguments must be given up front. All other args are used to run the final
@@ -42,6 +43,7 @@ fail() {
 
 # handle what few args we take, which all must be leading the command.
 repeat_fail_only=0
+repeat=1
 fullscreen=0
 verbose=0
 while [ $# -gt 0 ]; do
@@ -52,6 +54,9 @@ while [ $# -gt 0 ]; do
             ;;
         -f|--fullscreen)
             fullscreen=1
+            ;;
+        -N|--null)
+            repeat=0
             ;;
         -v|--verbose)
             verbose=1
@@ -113,6 +118,8 @@ while true; do
     echo -e "\033[1A\033[3C \033[${color_msg}m$(date)\033[${color_line}m [$((time_end - time_start)) s]\033[0m "
     echo -en " \033[${color_msg}m  -- $msg -- \033[0m"
     echo -ne "\033[${color_line}m│\033[1;37m  (\033[1;33m\\\n\033[0;37m to repeat, \033[1;33m^c\033[0;37m to quit) "
+
+    [ $repeat -eq 0 ] && exit
 
     # pause, hiding input so newlines don't cause goofy stuff
     stty -echo &>/dev/null

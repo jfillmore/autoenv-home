@@ -1,5 +1,5 @@
 0  7f2bbf094c45ef301932a2666a55badeeede68e3  ./.bashrc
-1  fffed97c12c0febf1989ce14fc0b9d77e86e0531  ./scripts/repeat.sh
+1  693c9cabd7f3b3b1738c0ab382d96a30f721b3e7  ./scripts/repeat.sh
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
 1  7e08683b381675525d7ffb9dc7b48d7a78cd01d1  ./scripts/color.py

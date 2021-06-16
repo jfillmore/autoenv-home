@@ -7,6 +7,7 @@
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
 0  da900254a35c7b3affe81f08cc216b283e8a17ed  ./scripts/color-256.pl
+1  ad0ca83bdbb382224374133e2cda12f7d178fb04  ./scripts/prune-ssh-known-hosts.sh
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
 1  ae5715d00724dcde59ff68a9ba14c603d5c384e7  ./scripts/sniff-py2.sh

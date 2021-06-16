@@ -46,11 +46,9 @@ rem() {
 # Command runner that can print a quoted version out first; skips execution w/
 # DRYRUN=1
 cmd() {
-    if [ $DRYRUN -eq 1 ]; then
-        echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
-    else
-        [ $VERBOSE -eq 1 ] \
-            && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
+    [ $DRYRUN -eq 1 -o $VERBOSE -eq 1 ] \
+        && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
+    if [ $DRYRUN -eq 0 ]; then
         "$@"
     fi
 }

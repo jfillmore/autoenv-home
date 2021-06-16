@@ -420,7 +420,7 @@ hi Underlined cterm=underline gui=underline ctermfg=darkcyan guifg=#00AAAA
 " Error
 "hi Error
 hi Error ctermfg=red ctermbg=black
-hi BadWhitespace ctermbg=darkblue guibg=#333399
+hi BadWhitespace ctermbg=darkmagenta guibg=#773399
 
 " Todo
 hi Todo ctermfg=yellow guifg=#FFFF55 ctermbg=darkred guibg=#AA0000

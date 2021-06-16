@@ -26,6 +26,7 @@ set encoding=utf-8
 set guioptions-=T
 set guioptions-=m
 set hlsearch
+set ignorecase
 set incsearch
 set modeline
 set modelines=5

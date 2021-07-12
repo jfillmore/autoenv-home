@@ -1,13 +1,54 @@
-#!/bin/bash
+#!/bin/bash -u
 
-echo '                              \033[#;#;#m                           '
-for attr in 0 1 4 5 7 8; do
-    echo -ne "\033[1;37m"
-    for fore in 30 31 32 33 34 35 36 37; do
-        for back in 40 41 42 43 44 45 46 47; do
-            printf '\033[%s;%s;%sm %01s;%02s;%02s ' $attr $fore $back $attr $fore $back
+fail() {
+    echo "Usage: $(BASENAME $0) -w|-n   (default: -w = wide)" >&2
+    [ $# -gt 0 ] && echo "$@"
+    exit 1
+}
+
+
+narrow=0
+[ $# -gt 1 ] && fail "Invalid parameters"
+
+arg="${1:--w}"
+if [ "$arg" = '-n' ]; then
+    narrow=1
+elif [ "$arg" != '-w' ]; then
+    fail "Unknown arg: $arg"
+fi
+
+
+
+attrs=(0 1 2 4) # skiping 5=blink (eww) and 7=reverse (redundant)
+
+echo -e "\033[1;40;37mFormat: \033[0;107;30m\\\033[{code}m\033[0m"
+echo -e "Don't forget resets: \033[0;47;30m\\\033[0m\033[0m"
+echo
+
+if [ $narrow -eq 1 ]; then
+
+    # narrow view
+    for clr_bg in {40..47} {100..107} 49; do
+        for clr_fg in {30..37} {90..97} 39; do
+            for attr in "${attrs[@]}"; do  # skiping 5=blink (eww) and 7=reverse (redundant)
+                echo -en "\033[${attr};${clr_bg};${clr_fg}m ${attr};${clr_bg};${clr_fg} \033[0m"
+            done
+            echo
         done
-		printf '\033[0;0m\n'
+        echo
     done
-    printf '\033[0;0m\n'
-done
+
+else
+
+    # wide view
+    for attr in "${attrs[@]}"; do
+        for clr_fg in {30..37} {90..97} 39; do
+            for clr_bg in {40..47} {100..107} 49; do
+                echo -en "\033[${attr};${clr_bg};${clr_fg}m ${attr};${clr_bg};${clr_fg} \033[0m"
+            done
+            echo
+        done
+        echo
+    done
+
+fi

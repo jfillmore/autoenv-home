@@ -5,7 +5,7 @@ SCRIPT_NAME=$(basename "$0")
 
 
 # TODO:
-# repeat mode: quiet, bell, "say", etc
+# repeat mode: quiet, bell, "say", etc, delay
 
 
 usage() {
@@ -14,10 +14,13 @@ Usage: $SCRIPT_NAME [ARGS] [CMD] [CMD_ARGS...]
 
 ARGS:
 
+    -c|--cmd CMD     Run CMD as unquoted string; extra params added on as \$@
+    -d|--delay SECS  Delay between loops
     -h|--help        This information
     -f|--fullscreen  Fullscreen mode using alternative buffer (e.g. like vim)
+    -N|--null        "Null" mode = don't actually repeat
+    -s|--say MSG     Use "say", if found, to say something between loops
     -v|--verbose     Include extra output each iteration
-    -N|--null        Null mode = don't actually repeat
     -1               Repeat only if there was a failure
 
 Arguments must be given up front. All other args are used to run the final
@@ -46,8 +49,24 @@ repeat_fail_only=0
 repeat=1
 fullscreen=0
 verbose=0
+say_msg=
+cmd_str=
+delay_secs=0
+
 while [ $# -gt 0 ]; do
     case "$1" in
+        -c|--cmd):
+            [ $# -gt 1 ] || fail "Missing argument to --cmd|-c"
+            [ ${#cmd_str} -eq 0 ] || fail "Already have command '$cmd_str'"
+            cmd_str="$2"
+            shift
+            ;;
+        -d|--delay)
+            [ $# -gt 1 ] || fail "Missing argument to --delay|-d"
+            delay_secs="$2"
+            shift
+            [ "$delay_secs" -ge 0 ] || fail "Delay must be >= 0"
+            ;;
         -h|--help)
             usage
             exit
@@ -57,6 +76,11 @@ while [ $# -gt 0 ]; do
             ;;
         -N|--null)
             repeat=0
+            ;;
+        -s|--say)
+            [ $# -gt 1 ] || fail "Missing argument to --say|-s"
+            say_msg="$2"
+            shift
             ;;
         -v|--verbose)
             verbose=1
@@ -76,7 +100,7 @@ done
 # ==============================================================================
 # repeat, prompting each time, as long as needed; 80 chars per block
 line_break='────────────────────────────────────────────────────────────────────────────────'
-line_break="$line_break$line_break$line_break"
+line_break="$line_break$line_break$line_break$line_break$line_break$line_break"
 
 [ $fullscreen -eq 1 ] && {
     tput smcup || fail "failed to enter fullscreen/alt buffer mode"
@@ -98,7 +122,7 @@ echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 while true; do
     # run command and prep output
     time_start=$(date +%s)
-    "$@"
+    eval $cmd_str "$@"
     retval=$?
     time_end=$(date +%s)
     [ $retval -eq 0 -a $repeat_fail_only -eq 1 ] && exit
@@ -111,6 +135,13 @@ while true; do
         color_msg='1;31'
         color_line='0;31'
     fi
+
+    # extra per-loop goodies
+    [ ${#say_msg} -gt 0 ] && {
+        [ $retval -eq 0 ] && result=success || result=failure
+        which say &>/dev/null && say "$result, $say_msg" &
+    }
+    [ $delay_secs -gt 0 ] && sleep $delay_secs
 
     # print footer + prompt
     cols=$(tput cols)

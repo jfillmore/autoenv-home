@@ -1,11 +1,28 @@
+" neovim notes:
+" - init: python3 -m pip install --upgrade pynvim
+" - issues
+"   - expand tabs requires overrides for yaml files
+"   - `ga` auto-formatting does not retain '# " comment leaders
+"
+
+
 " --- Plugins ---
 " https://github.com/junegunn/vim-plug
 " TL;DR: run `:PlugInstall` and `:PlugUpdate` to install/update plugins below:
+
 call plug#begin('~/.vim/plugged')
+
 Plug 'https://github.com/davidhalter/jedi-vim'
 Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
 Plug 'https://github.com/ctrlpvim/ctrlp.vim'
+
+if has('nvim')
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    Plug 'nvim-treesitter/playground'
+endif
+
 call plug#end()
+
 
 " `:verbose set tabstop? softtabstop? shiftwidth?` = help figure out settings
 
@@ -67,7 +84,6 @@ set noeol " no EOL at end of files
 set formatoptions-=cro
 " don't force comments to start of line when smartindent is on
 inoremap # x#
-fixdel
 
 
 " --- Generic Shortcuts ---
@@ -105,6 +121,9 @@ autocmd BufEnter * :syntax sync fromstart
 autocmd BufEnter,BufRead,BufNewFile * match BadWhitespace /\s\+$/
 autocmd BufRead,BufNewFile *.dhtml set syntax=html
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o formatoptions-=t
+" neovim somehow ends up disabling this, so force it
+autocmd FileType *.yaml set expandtab
+autocmd FileType *.yml set expandtab
 colorscheme jonny
 let c_minlines=4096
 let &colorcolumn="81"

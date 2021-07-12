@@ -1,13 +1,14 @@
 0  7f2bbf094c45ef301932a2666a55badeeede68e3  ./.bashrc
-1  693c9cabd7f3b3b1738c0ab382d96a30f721b3e7  ./scripts/repeat.sh
+1  2dafec1eed04af4d129fd6964e833358a0d8b8a0  ./scripts/repeat.sh
+1  a8da55dafe7fc5d66071fddcf86376e450462e5b  ./scripts/cols-ruler.sh
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
 1  7e08683b381675525d7ffb9dc7b48d7a78cd01d1  ./scripts/color.py
 1  a7964b2242dc27cfdaee50e65bd939a852ef7fec  ./scripts/pdf-split.sh
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
-1  08bf211eeef2cbd3586151299b72b7d52fa2d0f7  ./scripts/ansi_colors
+1  27a797839a350b215e03587f29de2d75dad17844  ./scripts/ansi_colors
 0  da900254a35c7b3affe81f08cc216b283e8a17ed  ./scripts/color-256.pl
-1  ad0ca83bdbb382224374133e2cda12f7d178fb04  ./scripts/prune-ssh-known-hosts.sh
+1  5c87ae5070b85dfa4366b053176b7ca6bdbb9ce0  ./scripts/prune-ssh-known-hosts.sh
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
 1  ae5715d00724dcde59ff68a9ba14c603d5c384e7  ./scripts/sniff-py2.sh
@@ -20,4 +21,4 @@
 1  41f706396f92d49dfe19cf517f4120068098e261  ./scripts/stail
 0  025ad9f061787040809292817b2b386fd9a7d22b  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
-0  6cf5d3d972735f5bea67af2c556d922e5b9e51e4  ./.bashrc.d/jkf.sh
+0  e38cb02e04493531c3d0ef801dd15654b07082fa  ./.bashrc.d/jkf.sh

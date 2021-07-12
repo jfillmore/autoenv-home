@@ -31,6 +31,11 @@ alias ssh='ssh -o TCPKeepAlive=yes -o ServerAliveInterval=90'
 alias swp_vim="for file in \$(find . -iname .\*.swp); do vim -r "\$file" && rm "\$file"; done"
 alias doco=docker-compose
 
+which nvim &>/dev/null && {
+    alias vi=nvim
+    alias vim=nvim
+}
+
 if [ -d $HOME/scripts ]; then
     PATH="$PATH:$HOME/scripts"
 fi

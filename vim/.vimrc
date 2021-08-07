@@ -13,7 +13,7 @@
 call plug#begin('~/.vim/plugged')
 
 Plug 'https://github.com/davidhalter/jedi-vim'
-Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
+"Plug 'https://github.com/Vimjas/vim-python-pep8-indent'
 Plug 'https://github.com/ctrlpvim/ctrlp.vim'
 
 if has('nvim')
@@ -59,9 +59,10 @@ set relativenumber
 
 
 " --- Indendation ---
-"set cindent
+set cindent
 set smartindent  " assumes c-style which forces #-style comments to be left-aligned
 set autoindent
+filetype indent off
 
 " avoid double indentation shenanigans
 let g:pyindent_nested_paren = '&sw'

@@ -102,6 +102,7 @@ nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 nnoremap <C-C> <C-W><C-C>
 nnoremap <leader>. :source ~/.vimrc<CR>
+nnoremap <leader>! /[^\x00-\x7F]<CR>
 
 
 " --- Macros ---

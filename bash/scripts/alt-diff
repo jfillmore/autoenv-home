@@ -1,0 +1,56 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+
+# functions
+# ==========================================
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME PATH [DIFF ARGS]
+(e.g.)
+
+Diff a file (or folder) against an ".alt" (or "-alt") directory that lives
+alongside a parent folder containing ".git/".
+
+
+EXAMPLE:
+
+    # diffs foo.py against ../repo.alt/folder/foo.py
+    [foo ~/dev/repo/folder]\$ $SCRIPT_NAME foo.py
+EOI
+}
+
+# Fail and quit w/ the error given
+fail() {
+    echo "${1-$SCRIPT_NAME command failed}" >&2
+    exit ${2:-1}
+}
+
+
+[ $# -ge 1 ] || {
+    usage
+    fail "Expected PATH to diff"
+}
+target="$1"; shift
+[ -e "$target" ] || fail "Path '$target' not found"
+base_pwd="$PWD"
+
+
+# figure out where our base .git dir and ensure an alt-dir exists
+while [ $PWD != '/' ]; do
+    [ -d .git ] && break
+    cd ..
+done
+
+[ -d .git ] || fail "Failed to find a .git directory"
+repo_name="$(basename "$PWD")"
+alt_repo_name=
+[ -d "../$repo_name.alt" ] && alt_repo_name="$repo_name.alt"
+[ -d "../$repo_name-alt" ] && alt_repo_name="$repo_name-alt"
+[ -n "$alt_repo_name" ] || fail "Failed to find '$repo_name.alt' or '$repo_name-alt' alongside '$PWD/$repo_name'"
+
+set -x
+diff "$@" "$base_pwd/$target" "../$alt_repo_name/$target"

@@ -89,6 +89,7 @@ while [ $# -gt 0 ]; do
             repeat_fail_only=1
             ;;
         *)
+            [ ${#cmd_str} -eq 0 ] || fail "Cannot mix extra argument '$1' with --cmd|-c"
             break
             ;;
     esac
@@ -122,7 +123,13 @@ echo -e "\033[1A\033[3C \033[1;37m$(date) \033[0;37m(# $loop)\033[0m "
 while true; do
     # run command and prep output
     time_start=$(date +%s)
-    eval $cmd_str "$@"
+    # it's funky, but eval + "$@" strips quotes in extra args... so we do one
+    # or the other to preseve quoting
+    if [ ${#cmd_str} -gt 0 ]; then
+        eval $cmd_str
+    else
+        "$@"
+    fi
     retval=$?
     time_end=$(date +%s)
     [ $retval -eq 0 -a $repeat_fail_only -eq 1 ] && exit

@@ -31,7 +31,6 @@ cleanup() {
     true
 }
 
-
 # Fail and quit w/ the error given
 fail() {
     echo "${1-$SCRIPT_NAME command failed}" >&2
@@ -75,9 +74,7 @@ bool_arg=0
 some_arg=
 
 while [ $# -gt 0 ]; do
-    arg="$1"
-    shift
-    case "$arg" in
+    case "$1" in
         --dry-run|-d)
             DRYRUN=1
             ;;
@@ -89,17 +86,18 @@ while [ $# -gt 0 ]; do
             exit
             ;;
         --arg|-a)
-            [ $# -ge 1 ] || fail "Missing arg to --arg|-a"
-            some_arg="$1"
+            [ $# -ge 2 ] || fail "Missing arg to --arg|-a"
+            some_arg="$2"
             shift
             ;;
         --bool|-b)
             bool_arg=1
             ;;
         *)
-            fail "Invalid argument: $arg"
+            fail "Invalid argument: $1"
             ;;
     esac
+    shift
 done
 
 

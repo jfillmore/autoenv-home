@@ -22,7 +22,7 @@ else
     host_clr='\033[1;31m'  # red
     alias l="ls -l"
 fi
-export PS1="\[\033[1;30;40m# [\033[0;37;40m\$(echo \$?)\033[1;30;40m|\$(date)]\n\[\033[1;37m\][\[$host_clr\]\h \[\033[1;34m\]\w\[\033[1;37m\]]$shell_sym\[\033[0m\] "
+export PS1="\[\033[1;30m# [\033[0;37m\$(echo \$?)\033[1;30m|\$(date)]\n\[\033[1;37m\][\[$host_clr\]\h \[\033[1;34m\]\w\[\033[1;37m\]]$shell_sym\[\033[0m\] "
 unset shell_sym host_clr
 
 alias grep="grep --color=auto"

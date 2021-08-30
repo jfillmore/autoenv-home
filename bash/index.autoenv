@@ -1,9 +1,10 @@
 0  7f2bbf094c45ef301932a2666a55badeeede68e3  ./.bashrc
-1  2dafec1eed04af4d129fd6964e833358a0d8b8a0  ./scripts/repeat.sh
+1  1641a1c4575cc3b3b0fccb3c540e22b771d783ef  ./scripts/repeat.sh
 1  a8da55dafe7fc5d66071fddcf86376e450462e5b  ./scripts/cols-ruler.sh
 1  78f8910f66c02e615072376bbc7fcc0233f215ac  ./scripts/git-cleanup
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py
 1  7e08683b381675525d7ffb9dc7b48d7a78cd01d1  ./scripts/color.py
+1  be4b256f4bdd2dec70fdbaaf9d659464c292c154  ./scripts/alt-diff
 1  a7964b2242dc27cfdaee50e65bd939a852ef7fec  ./scripts/pdf-split.sh
 1  a55abcd206f9b3e19ea2ca22dce37dad334983b7  ./scripts/frequency
 1  27a797839a350b215e03587f29de2d75dad17844  ./scripts/ansi_colors
@@ -19,6 +20,6 @@
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  1d5ce9d23a2d5ceafdbb20a6c9f75ed5e52a83e3  ./scripts/stats.py
 1  41f706396f92d49dfe19cf517f4120068098e261  ./scripts/stail
-0  025ad9f061787040809292817b2b386fd9a7d22b  ./scripts/.template
+0  c3bc848ec96faf7724de8f619ffc33e080ea9352  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
-0  bb13ec76a9602166daa18e4bc40c9a92ff905cd2  ./.bashrc.d/jkf.sh
+0  0579190fe8338b323216e18be86c9d45ce636eb1  ./.bashrc.d/jkf.sh

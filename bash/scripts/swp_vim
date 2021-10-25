@@ -150,4 +150,5 @@ for swap_file in "${swap_files[@]}"; do
             }
         fi
     ) || fail "Failed to recover $swap_file"
+    cmd rm "$swmp_file"
 done

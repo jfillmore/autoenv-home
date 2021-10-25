@@ -12,7 +12,7 @@
 1  1641a1c4575cc3b3b0fccb3c540e22b771d783ef  ./scripts/repeat.sh
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad
-1  ba6da3649718dbc09bf9957b9488dff4f78694ca  ./scripts/swp_vim
+1  95909ccfdd2472ee6ea9e423ec06eec3ab0ffe67  ./scripts/swp_vim
 1  8ee9ffe3dc9e1dd86df91e2e348c7149ee48e91a  ./scripts/ssh_tun
 1  5c87ae5070b85dfa4366b053176b7ca6bdbb9ce0  ./scripts/prune-ssh-known-hosts.sh
 1  9f01a358c23abf816e3515071b6d6e7aba00954f  ./scripts/csv-flatten.py

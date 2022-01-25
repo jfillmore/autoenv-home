@@ -144,7 +144,6 @@ for swap_file in "${swap_files[@]}"; do
             rem "Unchanged: $swap_dir/$real_file; removing swap file"
             cmd rm "$swap_file" || fail
         else
-            rem "\n($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) | $real_file (d)"
             diff -d -t -y --suppress-common-lines -W $(tput cols) "$TMP_FILE" "$real_file" \
                 | sed "s/\t/        /g" \
                 | while IFS='' read -r line; do
@@ -163,7 +162,7 @@ for swap_file in "${swap_files[@]}"; do
                 echo -e "\033[${clr}m$line\033[0m"
             done
             print_hr
-            echo "$swap_file / $real_file" >&2
+            rem "($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) / $real_file (d)"
             prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
                 cmd mv "$TMP_FILE" "$real_file" \
                     || fail "Failed to overwrite $real_file"

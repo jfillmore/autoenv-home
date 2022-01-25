@@ -23,6 +23,8 @@ EOI
 
 # Clean-up logic on script exit (including errors!)
 cleanup() {
+    tput clear
+    tput rmcup
     [ -f "${TMP_FILE:-.}" ] && rm "$TMP_FILE"
     return 0
 }
@@ -99,9 +101,8 @@ done
 
 # prep & error checking
 # ==========================================
-[ -z "$vim_dir" ] && vim_dir=$PWD
+[ -z "$vim_dir" ] && vim_dir="$PWD"
 TMP_FILE="/tmp/.$SCRIPT_NAME.tmp.$$"
-trap cleanup EXIT
 
 
 # script body
@@ -118,33 +119,38 @@ swap_files=($(find . -iname .\*.sw\?)) \
 i=0
 cols=$(tput cols) || fail
 mid_col=$((cols/2))  # rounds same way as diff :)
+tput smcup || fail "failed to enter fullscreen/alt buffer mode"
+trap cleanup EXIT
 
 for swap_file in "${swap_files[@]}"; do
     let i+=1
+    tput clear
     swap_dir=$(dirname "$swap_file") || fail
     swap_file=$(basename "$swap_file") || fail
-    real_file="${swap_file:1:${#swap_file}-5}"
+    real_name="${swap_file:1:${#swap_file}-5}"
+    real_path="$swap_dir/$real_name"
     (
         cd "$swap_dir" || fail
         vim -r "$swap_file" -c ":wq! $TMP_FILE" \
             || fail "Failed to recover swap file"
-        # sometimes the file was never saved or got deleted
-        [ -f "$real_file" ] || {
+
+        if [ ! -f "$real_name" ]; then
+            # sometimes the file was never saved or got deleted
             cat "$TMP_FILE"
             print_hr
-            rem "Dangling swap file; '$real_file' not found"
+            rem "Dangling swap file; '$real_path' not found"
             prompt_yn "(r)ecover or (d)isgard swap content?" r d && {
-                cmd mv "$TMP_FILE" "$real_file" \
-                    || fail "Failed to overwrite $real_file"
-            } || {
+                cmd mv "$TMP_FILE" "$real_name" \
+                    || fail "Failed to overwrite $real_path"
+            }
+            cmd rm "$swap_file" || fail
+        elif cmp -s "$TMP_FILE" "$real_name"; then
+            prompt_yn "Unchanged: $real_path; remove swap file?" && {
                 cmd rm "$swap_file" || fail
             }
-        }
-        if cmp -s "$TMP_FILE" "$real_file"; then
-            rem "Unchanged: $swap_dir/$real_file; removing swap file"
-            cmd rm "$swap_file" || fail
         else
-            diff -d -t -y --suppress-common-lines -W $(tput cols) "$TMP_FILE" "$real_file" \
+            # otherwise, print a diff it changed; offer to cleanup if not
+            diff -d -t -y --suppress-common-lines -W $(tput cols) "$TMP_FILE" "$real_name" \
                 | sed "s/\t/        /g" \
                 | while IFS='' read -r line; do
                 clr="0"
@@ -162,14 +168,12 @@ for swap_file in "${swap_files[@]}"; do
                 echo -e "\033[${clr}m$line\033[0m"
             done
             print_hr
-            rem "($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) / $real_file (d)"
+            rem "($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) / $real_name (d)"
             prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
-                cmd mv "$TMP_FILE" "$real_file" \
-                    || fail "Failed to overwrite $real_file"
-            } || {
-                cmd rm "$swap_file" || fail
+                cmd mv "$TMP_FILE" "$real_path" \
+                    || fail "Failed to overwrite $real_path"
             }
+            cmd rm "$swap_file" || fail
         fi
     ) || fail "Failed to recover $swap_file"
-    cmd rm "$swap_file"
 done

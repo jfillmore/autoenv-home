@@ -13,7 +13,7 @@
 1  b04876d9c1cb9cc07db0b042dc8c1d42b66cf962  ./scripts/auto_agent
 1  11db6b51ca42b4c4b0acee60a034465fafa3b0cd  ./scripts/sniff_nonascii.sh
 1  ae5715d00724dcde59ff68a9ba14c603d5c384e7  ./scripts/sniff-py2.sh
-1  fe02298c51f4f4a2bd92d8351630ae43a26bf0a8  ./scripts/swp_vim
+1  d6bc738239e827a9c0d18b5b4569061227ed4fec  ./scripts/swp_vim
 1  8ee9ffe3dc9e1dd86df91e2e348c7149ee48e91a  ./scripts/ssh_tun
 1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./scripts/grev
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./scripts/pad

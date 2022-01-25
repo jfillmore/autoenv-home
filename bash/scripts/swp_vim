@@ -61,6 +61,11 @@ prompt_yn() {
     [ "$resp" = "$yes" ] && return 0 || return 1
 }
 
+# print line break / horizontal ruler
+print_hr() {
+    echo -e "\n\033[1;33m==========================================================\033[0m" >&2
+}
+
 
 # collect args
 # ==========================================
@@ -114,11 +119,23 @@ for swap_file in "${swap_files[@]}"; do
     let i+=1
     swap_dir=$(dirname "$swap_file") || fail
     swap_file=$(basename "$swap_file") || fail
-    real_file="${swap_file:1:-4}"
+    real_file="${swap_file:1:${#swap_file}-5}"
     (
         cd "$swap_dir" || fail
         vim -r "$swap_file" -c ":wq! $TMP_FILE" \
             || fail "Failed to recover swap file"
+        # sometimes the file was never saved or got deleted
+        [ -f "$real_file" ] || {
+            cat "$TMP_FILE"
+            print_hr
+            rem "Dangling swap file; '$real_file' not found"
+            prompt_yn "(r)ecover or (d)isgard swap content?" r d && {
+                cmd mv "$TMP_FILE" "$real_file" \
+                    || fail "Failed to overwrite $real_file"
+            } || {
+                cmd rm "$swap_file" || fail
+            }
+        }
         if cmp -s "$TMP_FILE" "$real_file"; then
             rem "Unchanged: $swap_dir/$real_file; removing swap file"
             cmd rm "$swap_file"
@@ -141,7 +158,7 @@ for swap_file in "${swap_files[@]}"; do
                 #fi
                 echo -e "\033[${clr}m$line\033[0m"
             done
-            echo -e "\n\033[1;33m==========================================================\033[0m"
+            print_hr
             prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
                 cmd mv "$TMP_FILE" "$real_file" \
                     || fail "Failed to overwrite $real_file"
@@ -150,5 +167,5 @@ for swap_file in "${swap_files[@]}"; do
             }
         fi
     ) || fail "Failed to recover $swap_file"
-    cmd rm "$swmp_file"
+    cmd rm "$swap_file"
 done

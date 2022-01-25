@@ -35,7 +35,7 @@ fail() {
 
 # Print a comment
 rem() {
-    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+    echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
 }
 
 # Command runner that can print a quoted version out first; skips execution w/
@@ -110,6 +110,10 @@ cd "$vim_dir" || fail "Failed to cd to $vim_dir"
 
 swap_files=($(find . -iname .\*.sw\?)) \
     || fail "No swap files found in $vim_dir" 0
+[ ${#swap_files[*]} -eq 0 ] && {
+    rem "No swap files found"
+    exit 0
+}
 
 i=0
 cols=$(tput cols) || fail
@@ -138,7 +142,7 @@ for swap_file in "${swap_files[@]}"; do
         }
         if cmp -s "$TMP_FILE" "$real_file"; then
             rem "Unchanged: $swap_dir/$real_file; removing swap file"
-            cmd rm "$swap_file"
+            cmd rm "$swap_file" || fail
         else
             rem "\n($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) | $real_file (d)"
             diff -d -t -y --suppress-common-lines -W $(tput cols) "$TMP_FILE" "$real_file" \
@@ -159,6 +163,7 @@ for swap_file in "${swap_files[@]}"; do
                 echo -e "\033[${clr}m$line\033[0m"
             done
             print_hr
+            echo "$swap_file / $real_file" >&2
             prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
                 cmd mv "$TMP_FILE" "$real_file" \
                     || fail "Failed to overwrite $real_file"

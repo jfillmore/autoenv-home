@@ -20,6 +20,6 @@
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./scripts/pdf-combine.sh
 1  1d5ce9d23a2d5ceafdbb20a6c9f75ed5e52a83e3  ./scripts/stats.py
 1  41f706396f92d49dfe19cf517f4120068098e261  ./scripts/stail
-0  c3bc848ec96faf7724de8f619ffc33e080ea9352  ./scripts/.template
+0  cf696f369fbbf0651bc5396d7ee75427f6c31e08  ./scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./.bash_profile
-0  0579190fe8338b323216e18be86c9d45ce636eb1  ./.bashrc.d/jkf.sh
+0  dd550ce73f99f228654fdfc21d30a9731a552ded  ./.bashrc.d/jkf.sh

@@ -39,12 +39,13 @@ fail() {
 
 # Print a comment
 rem() {
-    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+    [ "$VERBOSE" -ge 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
 }
 
 # Command runner that can print a quoted version out first; skips execution w/
 # DRYRUN=1
 cmd() {
+    # no need to repeat our output w/ "set -x"
     [ $DRYRUN -eq 1 -o $VERBOSE -eq 1 ] \
         && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
     if [ $DRYRUN -eq 0 ]; then
@@ -78,8 +79,10 @@ while [ $# -gt 0 ]; do
         --dry-run|-d)
             DRYRUN=1
             ;;
-        --verbose|-v)
-            VERBOSE=1
+        --verbose|-v*)
+            [ "${arg:0:2}" = '--' ] \
+                && VERBOSE=$((VERBOSE + 1)) \
+                || VERBOSE=$((VERBOSE + ${#arg} - 1))
             ;;
         --help|-h)
             usage
@@ -100,10 +103,14 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+[ $VERBOSE -ge 2 ] && set -x
+
 
 # prep & error checking
 # ==========================================
 trap cleanup EXIT
+
+[ $DRYRUN -eq 1 ] && echo -e "[\033[4;40;93m DRYRUN \033[0m]" >&2
 
 
 # script body

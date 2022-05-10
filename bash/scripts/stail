@@ -12,6 +12,9 @@ import time
 # TODOS:
 # - time?
 # - auto-wrap vs truncate
+# - move to argparse
+# - fullscreen?
+# - stop local echo
 
 
 def usage():
@@ -27,11 +30,13 @@ Able to handle ANSI color codes to retain pretty output.
 
 ARGS:
 
-    -d|--delay MS    Delay between lines when scrolling (default: {LogPipe.DEF_DELAY})
-    -f|--fast-mode   Scroll through initial reads quickly; even faster if repeated
-    -h|--help        This information!
-    -n|--number      Show line numbers
-    -s|--size NUM    Number of lines to display at a time (default: {LogPipe.DEF_SIZE})
+    -c|--color RE CLR   Scan output for 'RE' and apply ansi CLR (e.g. "1;40") to matches
+    -d|--delay MS       Delay between lines when scrolling (default: {LogPipe.DEF_DELAY})
+    -F|--fast-mode      Scroll through initial reads quickly; even faster if repeated
+    -f|--follow         Watch for new lines (single file support for now)
+    -h|--help           This information!
+    -n|--number         Show line numbers
+    -s|--size NUM       Number of lines to display at a time (default: {LogPipe.DEF_SIZE})
 
 EXAMPLES:
 
@@ -46,13 +51,14 @@ class LogPipe:
     DEF_SIZE = 20
 
     ansi_re = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-    def __init__(self, size, delay, number):
+    def __init__(self, size, delay, number, color_map: dict):
         self.size = size
         self.buffer = []
         self.offset = 0  # points to the >last< self.buffer entry
         self.lines = 0
         self.delay = delay  # ms between printing new lines
         self.number = number
+        self.color_map = color_map
         self.termsize = None
         self.term_refresh()
 
@@ -104,6 +110,26 @@ class LogPipe:
             line_no = ''
         width = self.termsize.columns - padding
         trimmed_line = self._ansi_trim(line, width)
+        for re_str, clr_str in self.color_map.items():
+            # TODO: Strip any existing ANSI codes first?
+            # TODO: Support multipole colors for multiple groups?
+            matches = re.search(re_str, trimmed_line)
+            if not matches:
+                continue
+            groups = matches.groups()
+            if not groups:
+                # missing () to designate match, so do the whole thing
+                span = matches.span()
+                groups = [trimmed_line[span[0]:span[1]]]
+            for substr in matches.groups():
+                index = trimmed_line.index(substr)
+                trimmed_line = ''.join([
+                    trimmed_line[0:index],
+                    '\033[' + clr_str + 'm',
+                    substr,
+                    '\033[0m',
+                    trimmed_line[index + len(substr):],
+                ])
         output = line_no_format + '%s\033[0m\033[K\n'
         self._write(output % (line_no, trimmed_line), flush=True)
 
@@ -111,7 +137,7 @@ class LogPipe:
     def _ansi_trim(cls, line, width):
         """
         Trim a string to a specific width, accounting for ANSI codes that must
-        not be counted or truncated.
+        be ignored or truncated.
         """
         # easy out for many edge cases
         if not line:
@@ -157,8 +183,8 @@ class LogPipe:
             sys.stdout.flush()
 
 
-def main(size, delay, fast_mode, number, files):
-    logpipe = LogPipe(size, delay, number)
+def main(size, delay, fast_mode, follow, number, files, color_map: dict):
+    logpipe = LogPipe(size, delay, number, color_map)
     signal.signal(signal.SIGWINCH, logpipe.term_refresh)
     if not files:
         infiles = [sys.stdin]
@@ -167,6 +193,8 @@ def main(size, delay, fast_mode, number, files):
             open(path, 'r')
             for path in files
         ]
+    if follow and len(infiles) > 1:
+        raise RuntimeError('Cannot follow more than one input source')
     force_delay = None
     for infile in infiles:
         while True:
@@ -174,6 +202,10 @@ def main(size, delay, fast_mode, number, files):
             data = infile.readline()
             time_end = time.time()
             if not data:
+                if follow:
+                    # ugh, but better than eating the CPU
+                    time.sleep(1)
+                    continue
                 # no need to close stdin...
                 if files:
                     infile.close()
@@ -188,13 +220,19 @@ def main(size, delay, fast_mode, number, files):
             logpipe.add_line(data.strip('\n').strip('\r'), force_delay)
 
 
+        re_groups = {
+            '^\d+ (<[^>]+>) .*': '1;37;40',
+            '^(\d+ -!- .*)': '1;30;40',
+        }
 if __name__ == '__main__':
     args = {
-        'size': LogPipe.DEF_SIZE,
+        'color_map': {},  # regex: {"re_str": "1;37" ...}
         'delay': LogPipe.DEF_DELAY,
-        'number': False,
         'fast_mode': 0,
         'files': [],
+        'follow': 0,
+        'number': False,
+        'size': LogPipe.DEF_SIZE,
     }
     user_args = sys.argv[1:]
     try:
@@ -203,6 +241,12 @@ if __name__ == '__main__':
             if arg == '--help' or arg == '-h':
                 usage()
                 sys.exit()
+            elif arg == '--color' or arg == '-c':
+                if len(user_args) < 2:
+                    raise Exception('Missing arg to --color|-c')
+                re_str = user_args.pop(0)
+                clr_str = user_args.pop(0)
+                args['color_map'][re_str] = clr_str
             elif arg == '--delay' or arg == '-d':
                 if not user_args:
                     raise Exception('Missing arg to --delay|-d')
@@ -210,11 +254,10 @@ if __name__ == '__main__':
                 if delay < 0 or delay > 5000:
                     raise Exception('Delay must be between 0 and 5000')
                 args['delay'] = delay
-            elif arg == '--fast-mode' or arg.startswith('-f'):
-                if arg.startswith('-f'):
-                    args['fast_mode'] += len(arg) - 1
-                else:
-                    args['fast_mode'] += 1
+            elif arg == '--follow' or arg.startswith('-f'):
+                args['follow'] = 1
+            elif arg == '--fast-mode' or arg.startswith('-F'):
+                args['fast_mode'] = 1
             elif arg == '--number' or arg == '-n':
                 args['number'] = True
             elif arg == '--size' or arg == '-s':
@@ -225,7 +268,7 @@ if __name__ == '__main__':
                     raise Exception('Size must be between 1 and 200')
                 args['size'] = size
             else:
-                if not os.path.isfile(arg):
+                if not os.path.exists(arg):
                     raise Exception(f'File "{arg}" not found or cannot be read')
                 args['files'].append(arg)
         # now with everything read... action time!

@@ -114,6 +114,7 @@ line_break="$line_break$line_break$line_break$line_break$line_break$line_break"
 # print initial start header
 loop=1
 cols=$(tput cols)
+# FIXME: use cmd_str instead of $@ when set
 [ $verbose -eq 1 ] \
     && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m"
 echo -e "\033[1;37m╓${line_break:0:cols-1}\033[1D╖\033[0m"

@@ -4,7 +4,12 @@ function setPrompt {
 
 function grim {
     local query="$1"; shift
-    vim "$@" -c "/$query" $(grep -R --binary-files=without-match "$query" . | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
+    local matches=(
+        $(grep -R --binary-files=without-match "$query" . | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
+    )
+    vim "$@" \
+        -c "/$query" \
+        "${matches[@]}"
 }
 
 
@@ -46,6 +51,7 @@ fi
 export PATH
 export HISTSIZE=100000
 export EDITOR=vim
+export VISUAL=vim
 
 unset PROMPT_COMMAND
 setPrompt "${HOSTNAME%%.*}"

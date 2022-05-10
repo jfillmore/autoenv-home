@@ -168,6 +168,7 @@ for swap_file in "${swap_files[@]}"; do
                 echo -e "\033[${clr}m$line\033[0m"
             done
             print_hr
+            # FIXME: swap_files can be unset
             rem "($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) / $real_name (d)"
             prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
                 cmd mv "$TMP_FILE" "$real_path" \

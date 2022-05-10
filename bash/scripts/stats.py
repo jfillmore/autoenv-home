@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import math  
-import sys  
+import math
+import sys
 import re
 
 USAGE = r'''Usage: stats.py ARGS
@@ -15,37 +15,37 @@ ARGS:
    has_headers=0|1   Whether input has headers to be skipped or not; default=0
    dedupe_file=PATH  If given, dedupe_col is required and 'PATH.uniq' /
                      'PATH.dupes' will be written for reference
-''' 
+'''
 
 
-def sd_calc(data):  
-    n = len(data)  
-  
-    if n <= 1:  
-        return 0.0  
-  
-    mean, sd = avg_calc(data), 0.0  
-  
-    # calculate stan. dev.  
-    for el in data:  
-        sd += (float(el) - mean)**2  
-    sd = math.sqrt(sd / float(n-1))  
-  
-    return sd  
-  
+def sd_calc(data):
+    n = len(data)
 
-def avg_calc(ls):  
-    n, mean = len(ls), 0.0  
-  
+    if n <= 1:
+        return 0.0
+
+    mean, sd = avg_calc(data), 0.0
+
+    # calculate stan. dev.
+    for el in data:
+        sd += (float(el) - mean)**2
+    sd = math.sqrt(sd / float(n-1))
+
+    return sd
+
+
+def avg_calc(ls):
+    n, mean = len(ls), 0.0
+
     if n == 0:
         return 0
-    if n <= 1:  
-        return ls[0]  
-  
-    for el in ls:  
-        mean = mean + float(el)  
-    mean = mean / float(n)  
-  
+    if n <= 1:
+        return ls[0]
+
+    for el in ls:
+        mean = mean + float(el)
+    mean = mean / float(n)
+
     return mean
 
 

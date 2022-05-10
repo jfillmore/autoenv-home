@@ -3,6 +3,9 @@
 BASE_DIR=$(cd $(dirname "$0") && pwd -P)
 SCRIPT_NAME=$(basename "$0")
 
+# TODO:
+# - add .jkf-ignore and opts to manage it
+
 
 # functions
 # ==========================================

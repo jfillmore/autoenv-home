@@ -4,13 +4,14 @@ function setPrompt {
 
 function grim {
     local query="$1"; shift
-    local matches=(
-        $(grep -R --binary-files=without-match "$query" . | awk -F: '{sub(/ /, "\\ "); print $1}' | sort -u)
+    local path="${1:-.}"; shift
+    IFS=$'\n' vim "$@" -c "/$query" $(
+        grep -R --binary-files=without-match "$query" "$path" \
+        | awk -F: '{print $1}' \
+        | sort -u
     )
-    vim "$@" \
-        -c "/$query" \
-        "${matches[@]}"
 }
+
 
 
 [ $(uname) = 'Darwin' ] && {

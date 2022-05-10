@@ -1,0 +1,179 @@
+#!/bin/bash -u
+
+BASE_DIR=$(cd $(dirname "$0") && pwd -P)
+SCRIPT_NAME=$(basename "$0")
+
+
+# functions
+# ==========================================
+
+usage() {
+    cat <<EOI
+Usage: $SCRIPT_NAME [DIR]
+
+Recovery vim swap files easily.
+
+ARGUMENTS:
+
+    -d|--dry-run          Run without making any changes
+    -h|--help             This information
+    -v|--verbose          Print debugging information to stdout
+EOI
+}
+
+# Clean-up logic on script exit (including errors!)
+cleanup() {
+    tput clear
+    tput rmcup
+    [ -f "${TMP_FILE:-.}" ] && rm "$TMP_FILE"
+    return 0
+}
+
+# Fail and quit w/ the error given
+fail() {
+    echo "${1-$SCRIPT_NAME command failed}" >&2
+    exit ${2:-1}
+}
+
+# Print a comment
+rem() {
+    echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+}
+
+# Command runner that can print a quoted version out first; skips execution w/
+# DRYRUN=1
+cmd() {
+    [ $DRYRUN -eq 1 -o $VERBOSE -eq 1 ] \
+        && echo -e "\033[0;33;40m# $(printf "'%s' " "$@")\033[0;0m" >&2
+    if [ $DRYRUN -eq 0 ]; then
+        "$@"
+    fi
+}
+
+# Quick y/n prompt w/ an optional message
+prompt_yn() {
+    local msg="${1:-continue?}"
+    local yes="${2:-y}"
+    local no="${3:-n}"
+    local resp=''
+    while [ "$resp" != "$yes" -a "$resp" != "$no" ]; do
+        read -n 1 -p "$msg ($yes|$no) > " resp
+        echo >&2
+    done
+    [ "$resp" = "$yes" ] && return 0 || return 1
+}
+
+# print line break / horizontal ruler
+print_hr() {
+    echo -e "\n\033[1;33m==========================================================\033[0m" >&2
+}
+
+
+# collect args
+# ==========================================
+
+VERBOSE=0
+DRYRUN=0
+
+vim_dir=
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --dry-run|-d)
+            DRYRUN=1
+            ;;
+        --verbose|-v)
+            VERBOSE=1
+            ;;
+        --help|-h)
+            usage
+            exit
+            ;;
+        *)
+            [ -z "$vim_dir" ] || fail "Directory of '$vim_dir' already given"
+            vim_dir="$1"
+            [ -d "$vim_dir" ] || fail "Folder not found: $vim_dir"
+            ;;
+    esac
+    shift
+done
+
+
+# prep & error checking
+# ==========================================
+[ -z "$vim_dir" ] && vim_dir="$PWD"
+TMP_FILE="/tmp/.$SCRIPT_NAME.tmp.$$"
+
+
+# script body
+# ==========================================
+cd "$vim_dir" || fail "Failed to cd to $vim_dir"
+
+swap_files=($(find . -iname .\*.sw\?)) \
+    || fail "No swap files found in $vim_dir" 0
+[ ${#swap_files[*]} -eq 0 ] && {
+    rem "No swap files found"
+    exit 0
+}
+
+i=0
+cols=$(tput cols) || fail
+mid_col=$((cols/2))  # rounds same way as diff :)
+tput smcup || fail "failed to enter fullscreen/alt buffer mode"
+trap cleanup EXIT
+
+for swap_file in "${swap_files[@]}"; do
+    let i+=1
+    tput clear
+    swap_dir=$(dirname "$swap_file") || fail
+    swap_file=$(basename "$swap_file") || fail
+    real_name="${swap_file:1:${#swap_file}-5}"
+    real_path="$swap_dir/$real_name"
+    (
+        cd "$swap_dir" || fail
+        vim -r "$swap_file" -c ":wq! $TMP_FILE" \
+            || fail "Failed to recover swap file"
+
+        if [ ! -f "$real_name" ]; then
+            # sometimes the file was never saved or got deleted
+            cat "$TMP_FILE"
+            print_hr
+            rem "Dangling swap file; '$real_path' not found"
+            prompt_yn "(r)ecover or (d)isgard swap content?" r d && {
+                cmd mv "$TMP_FILE" "$real_name" \
+                    || fail "Failed to overwrite $real_path"
+            }
+            cmd rm "$swap_file" || fail
+        elif cmp -s "$TMP_FILE" "$real_name"; then
+            prompt_yn "Unchanged: $real_path; remove swap file?" && {
+                cmd rm "$swap_file" || fail
+            }
+        else
+            # otherwise, print a diff it changed; offer to cleanup if not
+            diff -d -t -y --suppress-common-lines -W $(tput cols) "$TMP_FILE" "$real_name" \
+                | sed "s/\t/        /g" \
+                | while IFS='' read -r line; do
+                clr="0"
+                symbol="${line:$mid_col:1}"
+                if [ "$symbol" = '<' ]; then
+                    clr="1;32"
+                elif [ "$symbol" = '>' ]; then
+                    clr="1;31"
+                fi
+                #if echo "$line" | grep -qE "\<(\t|$)"; then
+                #    clr="1;32"
+                #elif echo "$line" | grep -qE "\>(\t|$)"; then
+                #    clr="1;31"
+                #fi
+                echo -e "\033[${clr}m$line\033[0m"
+            done
+            print_hr
+            rem "($i of ${#swap_files[@]}) $swap_dir/ - $swap_file (r) / $real_name (d)"
+            prompt_yn "(r)ecover or (d)isgard swap (left file) content?" r d && {
+                cmd mv "$TMP_FILE" "$real_path" \
+                    || fail "Failed to overwrite $real_path"
+            }
+            cmd rm "$swap_file" || fail
+        fi
+    ) || fail "Failed to recover $swap_file"
+done

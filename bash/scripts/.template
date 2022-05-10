@@ -55,13 +55,15 @@ cmd() {
 
 # Quick y/n prompt w/ an optional message
 prompt_yn() {
-    local msg="${1:-confinue?}"
+    local msg="${1:-continue?}"
+    local yes="${2:-y}"
+    local no="${3:-n}"
     local resp=''
-    while [ "$resp" != 'y' -a "$resp" != 'n' ]; do
-        read -n 1 -p "$msg (y|n) > " resp
+    while [ "$resp" != "$yes" -a "$resp" != "$no" ]; do
+        read -n 1 -p "$msg ($yes|$no) > " resp
         echo >&2
     done
-    [ "$resp" = 'y' ] && return 0 || return 1
+    [ "$resp" = "$yes" ] && return 0 || return 1
 }
 
 

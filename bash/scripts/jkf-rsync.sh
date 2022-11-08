@@ -153,6 +153,7 @@ rsync_args=(
     --exclude=.git*
     --exclude=.DS_Store
     --exclude='.*.sw?'
+    --exclude='.sw?'
 )
 [ $VERBOSE -ge 1 ] && rsync_args+=(--verbose --progress)
 [ $DRYRUN -ge 1 ] && rsync_args+=(--dry-run)

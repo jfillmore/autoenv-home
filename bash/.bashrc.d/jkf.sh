@@ -5,11 +5,21 @@ function setPrompt {
 function grim {
     local query="$1"; shift
     local path="${1:-.}"; shift
-    IFS=$'\n' vim "$@" -c "/$query" $(
-        grep -R --binary-files=without-match "$query" "$path" \
-        | awk -F: '{print $1}' \
-        | sort -u
+    # We capture the files in an array first so we can use IFS to split on
+    # newlines. Shame on you if your files have newlines in the names.
+    local -a files
+    IFS=$'\n' files=(
+        $(
+            grep -Ri --binary-files=without-match "$query" "$path" \
+            | awk -F: '{print $1}' \
+            | sort -u
+        )
     )
+    [ ${#files[@]} -eq 0 ] && {
+        echo "No files in path '$path' matched '$query'" >&2
+        return 1
+    }
+    vim "$@" -c "/$query" "${files[@]}"
 }
 
 

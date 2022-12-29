@@ -82,9 +82,9 @@ while [ $# -gt 0 ]; do
             DRYRUN=1
             ;;
         --verbose|-v*)
-            [ "${arg:0:2}" = '--' ] \
+            [ "${1:0:2}" = '--' ] \
                 && VERBOSE=$((VERBOSE + 1)) \
-                || VERBOSE=$((VERBOSE + ${#arg} - 1))
+                || VERBOSE=$((VERBOSE + ${#1} - 1))
             ;;
         --help|-h)
             usage

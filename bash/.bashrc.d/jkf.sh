@@ -23,6 +23,21 @@ function grim {
 }
 
 
+git() {
+    if [ $# -gt 0 -a "$1" = commit ]; then
+        grep -qR \
+            --include="*.py" \
+            "import pdb; pdb\.set_trace\(\)" \
+            "$(/usr/bin/git rev-parse --show-toplevel)" \
+            && {
+                echo -e "\033[1;31m***JKF PDB FAIL***\033[0m" >&2
+                return 1
+            }
+    fi
+    /usr/bin/git "$@"
+}
+
+
 
 [ $(uname) = 'Darwin' ] && {
     alias ls="ls -G"
@@ -45,7 +60,7 @@ unset shell_sym host_clr
 alias grep="grep --color=auto"
 alias jdiff="diff -yb --suppress-common-lines"
 alias ssh='ssh -o TCPKeepAlive=yes -o ServerAliveInterval=90'
-alias doco=docker-compose
+alias doco="docker compose"
 
 which nvim &>/dev/null && {
     alias vi=nvim

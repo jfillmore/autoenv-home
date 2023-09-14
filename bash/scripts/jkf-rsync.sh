@@ -141,6 +141,7 @@ ssh_args=(
     ssh
     -l "$JKF_USER"
     -o UserKnownHostsFile="$peer_file"
+    -o HashKnownHosts=no
 )
 ssh_args_str="${ssh_args[@]}"
 rsync_args=(

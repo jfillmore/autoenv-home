@@ -354,7 +354,7 @@ hi TabLineSel ctermfg=white ctermbg=darkgrey
 "hi Title
 
 " Visual
-hi Visual ctermbg=darkblue guibg=#0000AA cterm=bold gui=bold
+hi Visual ctermbg=darkgrey guibg=#0000AA cterm=bold gui=bold
 
 " warning message
 "hi WarningMsg

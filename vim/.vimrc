@@ -62,13 +62,14 @@ set relativenumber
 set cindent
 set smartindent  " assumes c-style which forces #-style comments to be left-aligned
 set autoindent
-filetype indent off
+filetype indent on  " off = python indenting goes wacky
 
 " avoid double indentation shenanigans
 let g:pyindent_nested_paren = '&sw'
 let g:pyindent_open_paren = '&sw'
 let g:pyindent_continue = '&sw'
-
+" ~/.config/nvim/init.vim version works more reliably
+"let g:pyindent_disable_parentheses_indenting = 1
 
 
 " --- Spaces/Tabs ---

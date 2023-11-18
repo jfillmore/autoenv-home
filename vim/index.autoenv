@@ -1,5 +1,6 @@
+0  dfa8537748a9df34c4d94cd1a4076be920874f81  ./.config/nvim/init.vim
 0  5bb4c3cb484de6fe4f3db547719da672287fe48e  ./.vim/colors/jonny.vim
 0  3436446f155895ba3d9af676b4d181ce720e7ecc  ./.vim/autoload/plug.vim
 0  2734a0cdd15155b978cebf185052585dfbe15dc1  ./.vim/after/syntax/sh.vim
 0  c4bbcebf29f05cf0e8e26e5356527b5d4f7adaf0  ./.vim/localrc.vim
-0  cfb4e8d4931662c558be6eeab87c08a7d586e8f3  ./.vimrc
+0  fcc06eb543a684029e041a060a3e760391656af9  ./.vimrc

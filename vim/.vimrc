@@ -71,6 +71,13 @@ let g:pyindent_continue = '&sw'
 " ~/.config/nvim/init.vim version works more reliably
 "let g:pyindent_disable_parentheses_indenting = 1
 
+" stop yaml from indenting automatically when commenting out a line
+augroup filetype_yaml
+  autocmd!
+  autocmd BufEnter *.yaml,*.yml
+  \ setlocal indentkeys-=0#
+augroup END
+
 
 " --- Spaces/Tabs ---
 set softtabstop=4
@@ -86,6 +93,8 @@ set noeol " no EOL at end of files
 set formatoptions-=cro
 " don't force comments to start of line when smartindent is on
 inoremap # x#
+" another attempt to keep comments from having strange auto-indentation patterns
+set indentkeys-=0#
 
 
 " --- Generic Shortcuts ---
@@ -105,6 +114,7 @@ nnoremap <C-H> <C-W><C-H>
 nnoremap <C-C> <C-W><C-C>
 nnoremap <leader>. :source ~/.vimrc<CR>
 nnoremap <leader>! /[^\x00-\x7F]<CR>
+nnoremap <leader>  :%s/ \+$//e<CR>
 
 
 " --- Macros ---

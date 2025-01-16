@@ -65,7 +65,7 @@ def print_stats(col_num, headers, nums, skipped, filtered):
     ))
 
 
-def main(dedupe_col=None, ifs_re='\s+', has_headers=False, to_skip='', dedupe_file=None):
+def main(dedupe_col=None, ifs_re=r'\s+', has_headers=False, to_skip='', dedupe_file=None):
     headers = []
     grid = dupes_grid = skipped = filtered = None  # all to become arrays based on # of columns
     if dedupe_col is not None:

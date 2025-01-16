@@ -6,6 +6,7 @@ SCRIPT_NAME=$(basename "$0")
 
 # TODO:
 # repeat mode: quiet, bell, "say", etc, delay
+# docker can screw stuff up w/ input errors causing unbreakable loops
 
 
 usage() {

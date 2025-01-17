@@ -8,6 +8,11 @@ EDITOR_ARGS=${EDITOR_ARGS:-}
 [ -z "$EDITOR_ARGS" ] && [ "$EDITOR" = "vim" ] && EDITOR_ARGS="-O"
 
 
+# DREAMS:
+# - looser file name matching?
+# - make walk* commands stand-alone too w/ shared functions
+
+
 # functions
 # ==========================================
 
@@ -21,18 +26,21 @@ on recent per-file changes and diffs.
 
 ARGUMENTS:
 
-    # === Required ===
+    # === Primary args ===
 
     # Defaults to PWD if not specified.
     -r|--repo PATH                Repo (or nested) dir, on branch to review.
-    # Target commit region to review
-    -T|--tail-hash HASH           Initial point of departure for target
-    -H|--head-hash HASH           Where we intend to merge up to in source (HEAD usually)
+    # Defauts to parent branch's latest commit
+    -H|--head GIT_REF             Where we intend to merge up to (HEAD usually)
+    # Defaults to the last commit merged from the parent branch
+    -T|--tail GIT_REF             Initial point of departure for target
 
     # === Optional ===
 
-    # Helpers
+    # Path mappings help handle relocations so files can still be linked.
     -m|--map src_path:dst_path    Reflect a path rename within current branch
+    # Guesses based on 'git reflog' when needed (e.g. for "compare")
+    -p|--parent BRANCH            Branch name we split from (and will merge with)
 
     # Generic args
     -h|--help                     This information
@@ -43,7 +51,7 @@ ACTIONS:
     # Summary information
     list-commits [GIT LOG ARGS]   List commits between tail and head hashes
     list-files [GIT DIFF ARGS]    List files changed between tail and head hashes
-    compare [TARGET_BRANCH]   Show useful hashes for target branch
+    compare TARGET_BRANCH         Show comparisons and hashes between us and our parent
 
     # Walk commands step through each file changed (unless filtered to one).
     # FILE paths are relative to the repo root and must be in our list of files
@@ -66,10 +74,10 @@ EXAMPLES:
 
     # Edit a specific file found within our change set between two commits. It
     # reflects that the folder "MyPackageV1" was moved to "src/MyPackage" in the
-    # current branch.
+    # current branch, and restricts our search to this mapped path.
     $ git-review.sh -vv \\
         -m MyPackageV1:src/MyPackage \\
-        -r ./MyPackageV1 \\
+        -r ./src/MyPackage \\
         -T a7a66b6d429b27b6eb62648781ed53b1aa26f61f \\
         -H HEAD \\
         walk-edit \\
@@ -144,18 +152,29 @@ apply_path_maps() {
 }
 
 
+guess_branch_source() {
+    local dst="$1"
+    # e.g. a7a66b6d429b27b6eb62648781ed53b1aa26f61f main
+    git reflog --no-abbrev-commit \
+        | grep -E ": checkout: moving from .* to $dst$" \
+        | tail -n 1 \
+        | sed -E 's|.*checkout: moving from (.*) to .*|\1|'
+}
+
+
 # collect args
 # ==========================================
 
 VERBOSE=0
 
-repo_dir="$PWD"
+repo_dir=
 repo_path=
-head_hash=  # will contain full, validated path
-tail_hash=  # will contain full, validated path
+head_ref=  # will contain full, validated path
+tail_ref=  # will contain full, validated path
+parent_branch=
+map_paths=()
 action=
 action_args=()
-map_paths=()
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -171,7 +190,7 @@ while [ $# -gt 0 ]; do
         -r|--repo)
             [ $# -ge 2 ] || fail "Missing arg to --repo|-r"
             [ -d "$2" ] || fail "Target repo path '$2' does not exist"
-            [ -n "$repo_dir" ] && fail "Only one repo path allowed"
+            [ -n "$repo_dir" ] && fail "Only one repo path allowed; already got: $repo_dir"
             repo_dir="$(cd "$2" && git rev-parse --show-toplevel)" \
                 || fail "Could not get git repo path"
             repo_path="$(cd "$2" && pwd -P)" \
@@ -180,21 +199,27 @@ while [ $# -gt 0 ]; do
             repo_path="${repo_path#$repo_dir}"
             shift
             ;;
-        -T|--tail-hash)
-            [ $# -ge 2 ] || fail "Missing arg to --tail-hash|-T"
-            [ -n "$tail_hash" ] && fail "Only one tail hash allowed"
-            tail_hash="$2"
+        -T|--tail)
+            [ $# -ge 2 ] || fail "Missing arg to --tail|-T"
+            [ -n "$tail_ref" ] && fail "Only one tail hash allowed"
+            tail_ref="$2"
             shift
             ;;
-        -H|--head-hash)
+        -H|--head)
             [ $# -ge 2 ] || fail "Missing arg to --head-hash|-H"
-            [ -n "$head_hash" ] && fail "Only one head hash allowed"
-            head_hash="$2"
+            [ -n "$head_ref" ] && fail "Only one head hash allowed"
+            head_ref="$2"
             shift
             ;;
         -m|--map)
             [ $# -ge 2 ] || fail "Missing arg to --map|-m"
             map_paths+=("$2")
+            shift
+            ;;
+        -p|--parent)
+            [ $# -ge 2 ] || fail "Missing arg to --parent|-p"
+            [ -n "$parent_branch" ] && fail "Only one parent branch allowed"
+            parent_branch="$2"
             shift
             ;;
         *)
@@ -210,19 +235,46 @@ done
 # prep & error checking
 # ==========================================
 
-# Required args
-[ -z "$repo_dir" ] && fail "No repo specified via -r|--repo"
-[ -z "$tail_hash" ] && fail "No tail hash specified via -T|--tail-hash"
-[ -z "$head_hash" ] && fail "No head hash specified via -H|--head-hash"
-[ -z "$action" ] && fail "No action specified"
-[ -z "$repo_path" ] && repo_path=.
-
-# Verify args
+# at least validate the repo bits first
+[ -z "$repo_dir" ] && {
+    repo_dir="$(git rev-parse --show-toplevel)" \
+       || fail "Could not get git repo path"
+    repo_path="${PWD#$repo_dir}"
+    rem "Using repo dir: $repo_dir, repo path: ./$repo_path"
+}
+[ -z "$repo_path" ] && repo_path="$repo_dir"  # we have to have something at least
 cmd cd "$repo_path" || fail "Could not cd to repo"
-git rev-parse --verify "$tail_hash" >/dev/null \
-    || fail "Invalid tail hash in repo; 'git fetch' maybe?"
-git rev-parse --verify "$head_hash" >/dev/null \
-    || fail "Invalid head hash in repo; 'git fetch' maybe?"
+
+# Grab some extra info that is handing for 'compare' and validating things
+git_remote="$(git remote)" \
+    || fail "Could not get remote for $repo_dir"
+cur_branch="$(git rev-parse --abbrev-ref HEAD)" \
+    || fail "Failed to get branch name"
+[ -z "$parent_branch" ] && {
+    parent_branch="$(guess_branch_source "$cur_branch")" \
+        || fail "Could not guess parent branch"
+    rem "Guessed parent branch: $parent_branch"
+}
+last_merged_hash="$(cmd git merge-base "$cur_branch" "$git_remote/$parent_branch")" \
+    || fail "Could not get merge base hash for $cur_branch and $git_remote/$parent_branch"
+
+[ -z "$tail_ref" ] && {
+    tail_ref="$last_merged_hash"
+    rem "Using last merged hash as tail: $tail_ref"
+}
+[ -z "$head_ref" ] && {
+    head_ref="$git_remote/$parent_branch" \
+        || fail "Could not get remote for $parent_branch"
+    rem "Using remote parent branch as head: $head_ref"
+}
+
+[ -z "$action" ] && fail "No action specified"
+
+# Verify a few args
+git rev-parse --verify "$tail_ref" >/dev/null \
+    || fail "Invalid tail ref in repo; 'git fetch' maybe?"
+git rev-parse --verify "$head_ref" >/dev/null \
+    || fail "Invalid head ref in repo; 'git fetch' maybe?"
 
 
 # script body
@@ -231,47 +283,45 @@ git rev-parse --verify "$head_hash" >/dev/null \
 
 if [ "$action" = 'list-commits' ]; then
     tgt_path="$(apply_path_maps "$repo_path" 1)"
-    git_args=("$tail_hash..$head_hash" -- "$tgt_path")
+    git_args=("$tail_ref..$head_ref" -- "$tgt_path")
     [ ${#action_args[@]} -gt 0 ] && git_args+=("${action_args[@]}")
     cmd git log "${git_args[@]}" || fail "git log failed"
 
 elif [ "$action" = 'list-files' ]; then
     tgt_path="$(apply_path_maps "$repo_path" 1)"
-    git_args=("--name-only" "$tail_hash..$head_hash" -- "$tgt_path")
+    git_args=("--name-only" "$tail_ref..$head_ref" -- "$tgt_path")
     [ ${#action_args[@]} -gt 0 ] && git_args+=("${action_args[@]}")
     cmd git diff "${git_args[@]}" || fail "git diff failed"
 
 elif [ "$action" = 'compare' ]; then
     cur_branch="$(git rev-parse --abbrev-ref HEAD)" \
         || fail "Failed to get branch name"
-    target_branch=
-    [ ${#action_args[@]} -ne 1 ] && fail "Expected one argument for compare"
-    [ ${#action_args[@]} -ge 1 ] && target_branch="${action_args[0]}"
+    # Detect which branch we were branched from for default value:
+    [ ${#action_args[@]} -eq 0 ] || fail "No arguments expected for compare"
 
+    target_branch="$git_remote/$parent_branch"
     rem "=== Last commit merged from $target_branch: ===" 1
-    last_merged_hash="$(cmd git merge-base "$cur_branch" "$target_branch")" \
-        || fail "Could not get merge base hash"
     cmd git log -1 "$last_merged_hash" || fail "Could not get merge base info"
     echo
 
     rem "=== Last commit in $target_branch: ===" 1
+    cmd git log -1 "$target_branch" || fail "Could not get target branch info"
+    echo
+
+    rem "=== Difference between $target_branch and --head" 1
+    cmd git --no-pager diff --stat "$target_branch..$head_ref" || fail "Could not get diff info"
+    echo
+
+    rem "=== Difference between --tail and --head" 1
+    cmd git --no-pager diff --stat "$tail_ref..$head_ref" || fail "Could not get diff info"
+    echo
+
+    rem "=== Useful hashes ===" 1
     last_hash="$(cmd git rev-parse "$target_branch")" \
         || fail "Could not get target branch info"
-    cmd git log -1 "$last_hash" || fail "Could not get target branch info"
-    echo
-
-    rem "=== Difference between $target_branch and --head-hash"
-    cmd git diff --stat "$last_hash..$head_hash" || fail "Could not get diff info"
-    echo
-
-    rem "=== Difference between --tail-hash and --head-hash"
-    cmd git diff --stat "$tail_hash..$head_hash" || fail "Could not get diff info"
-    echo
-
-    rem "=== Useful hashes ==="
     cat <<EOI
-tail_hash=$last_merged_hash  # last commit merged from $target_branch
-head_hash=$last_hash  # last commit in $target_branch
+merged_hash=$last_merged_hash  # last commit merged from $parent_branch
+parent_hash=$last_hash  # last commit in $parent_branch
 EOI
 
 elif [ "$action" = 'walk-hist' ]; then
@@ -281,13 +331,13 @@ elif [ "$action" = 'walk-hist' ]; then
 
     # For each file, show what was changed
     tgt_path="$(apply_path_maps "$repo_path" 1)"
-    cmd git diff --name-only "$tail_hash..$head_hash" -- "$tgt_path" \
+    cmd git diff --name-only "$tail_ref..$head_ref" -- "$tgt_path" \
         | while read -r path; do
             [ -n "$only_path" ] && [ "$path" != "$only_path" ] && continue
             rem "Source file: $path"
             cmd git diff \
                 --color=always \
-                $tail_hash..$head_hash -- "$path" \
+                $tail_ref..$head_ref -- "$path" \
                 | less -RK \
                 || break
         done
@@ -299,15 +349,15 @@ elif [ "$action" = 'walk-diff' ]; then
 
     # For each file, diff source and target versions between repos
     tgt_path="$(apply_path_maps "$repo_path" 1)"
-    cmd git diff --name-only "$tail_hash..$head_hash" -- "$tgt_path" \
+    cmd git diff --name-only "$tail_ref..$head_ref" -- "$tgt_path" \
         | while read -r path; do
             [ -n "$only_path" ] && [ "$path" != "$only_path" ] && continue
             {
                 tgt_path="$(apply_path_maps "$path")"
-                echo "Source: git show $head_hash:$path"
+                echo "Source: git show $head_ref:$path"
                 echo "Target: $repo_dir/$tgt_path"
                 # Snag source file via git show to get right version w/ hash
-                cmd git show "$head_hash:$path" \
+                cmd git show "$head_ref:$path" \
                     | cmd diff -b -u --color=always \
                     - \
                     "$repo_dir/$tgt_path"
@@ -324,37 +374,44 @@ elif [ "$action" = 'walk-edit' ]; then
     # We don't want to hijack stdin (e.g. maybe it's vim and there is a prompt).
     # We'll assume no newlines, but we need to handle spaces in paths.
     tgt_path="$(apply_path_maps "$repo_path" 1)"
-    IFS=$'\n' path_list=($(cmd git diff --name-only "$tail_hash..$head_hash" -- "$tgt_path"))
+    IFS=$'\n' path_list=($(cmd git diff --name-only "$tail_ref..$head_ref" -- "$tgt_path"))
+    echo "${path_list[*]} files to edit"
     for path in "${path_list[@]}"; do
         [ -n "$only_path" ] && [ "$path" != "$only_path" ] && continue
         rem "File: $path"
         new_path="$(apply_path_maps "$path")"
         # Some editors are hard to quit w/ non-zero status (vim tip: use `:cq`).
         echo "Target: $repo_dir/$new_path"
-        echo "Source: git show $head_hash:$path"
+        echo "Source: git show $head_ref:$path"
         echo
-        prompt_yn \
-            "Editing with $EDITOR. (c)ontinue or (q)uit?" \
-            c q \
-            || break
+        # No need to prompt w/ just one thing to edit
+        [ -n "$only_path" ] && {
+            prompt_yn \
+                "Editing with $EDITOR. (c)ontinue or (q)uit?" \
+                c q \
+                || break
+        }
         # Best to have a similar name for any syntax highlighting hints.
-        tmp_dir=$(mktemp -d) || fail "Could not create temp dir"
-        tmp_file=$(mktemp "$tmp_dir/$(basename "$path")") \
+        tmp_dir="$(mktemp -d)" || fail "Could not create temp dir"
+        tmp_file="$(mktemp "$tmp_dir/$(basename "$path")")" \
             || fail "Could not create temp file"
         (
             {
                 echo "# ================================"
                 echo "# TEMPORARY FILE: $tmp_file"
-                echo "# GENERATED VIA: git show $head_hash:$path"
+                echo "# GENERATED VIA: git show $head_ref:$path"
                 echo "# ================================"
             } > "$tmp_file"
-            cmd git show "$head_hash:$path" >> "$tmp_file" \
-                || fail "Could not get source file"
+            cmd git show "$head_ref:$path" >> "$tmp_file" \
+                || {
+                    echo "Skipping file due to git error" >&2
+                    break
+                }
             quit=0
             cmd "$EDITOR" $EDITOR_ARGS "$repo_dir/$new_path" "$tmp_file" \
                 || quit=1
             rm -rf "$tmp_dir" &>/dev/null
-            [ $quit -eq 1 ] && exit 1
+            exit $quit
         ) || break
     done
 

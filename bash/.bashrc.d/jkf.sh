@@ -76,8 +76,8 @@ fi
 
 export PATH
 export HISTSIZE=100000
-export EDITOR=vim
-export VISUAL=vim
+export EDITOR=nvim
+export VISUAL=nvim
 
 unset PROMPT_COMMAND
 setPrompt "${HOSTNAME%%.*}"

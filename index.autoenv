@@ -26,7 +26,7 @@
 1  8ee9ffe3dc9e1dd86df91e2e348c7149ee48e91a  ./bash/scripts/ssh_tun
 1  087e5dbe1ab35776bb6fb1dab2b5c5d67e88bdcf  ./bash/scripts/grev
 1  8b18944ec09e840a942ada146e1cf4255933b474  ./bash/scripts/pad
-1  8198ac5cc5fd5dd5d49e8f836be83e36e9cfa641  ./bash/scripts/git-review.sh
+1  86931a1f11c12086173030d9e91f152e7dfba78f  ./bash/scripts/git-review.sh
 1  f532e2adb1d1283441516e8cb89a44d7f6c025b1  ./bash/scripts/rpass
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./bash/scripts/pdf-combine.sh
 1  91772f623ac006ef9143d33f5a6ee72ed37a75bd  ./bash/scripts/jkf-rsync.sh
@@ -34,8 +34,7 @@
 1  e20ed41d84bba4473ea3c2d05ff6b47d0569b3d5  ./bash/scripts/stail
 0  3d84c77f8f6c75f8ebe43a6698026d172cdf0126  ./bash/scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./bash/.bash_profile
-0  75cbe3834e2cf0e6fa94fdd0b0aae313de0f0f01  ./bash/.bashrc.d/jkf.sh
-1  a622879ab881fc5e92b993ba3bc3f8089c7e6581  ./git-review.sh
+0  34c79ca8f2fe12ffb06f1e4c3c0f592e1ead359d  ./bash/.bashrc.d/jkf.sh
 0  ec0f3e3339fb9becc42e3abdea636b4d5c39be1d  ./README.md
 0  eb25ac705b9a35b8be7dcbb7e8a7ac85bd8a7143  ./.gitignore
 1  1546e848b2d70e80a5a4291d9d7c3a8a347762f4  ./bash-python/virtualenvwrapper.sh

@@ -11,6 +11,7 @@ GIT_RENAME_THRESHOLD=${GIT_RENAME_THRESHOLD:-25}  # Default to more aggressive d
 
 # DREAM Maybe a way for FILE paths to indicate they are relative to repo, not target?
 
+
 # functions
 # ==========================================
 
@@ -378,9 +379,9 @@ GIT_REMOTE="$(git remote)" \
 CUR_BRANCH="$(git rev-parse --abbrev-ref HEAD)" \
     || fail "Failed to get branch name"
 [ -z "$TARGET_BRANCH" ] && {
-    # FIXME: we don't want this commit actually
     _source="$(guess_branch_source "$CUR_BRANCH")" \
         || fail "Could not guess parent branch"
+    # e.g. "a7a66b6d429b27b6eb62648781ed53b1aa26f61f main"
     _pre_branch_commit="${_source%% *}"
     TARGET_BRANCH="${_source#$_pre_branch_commit }" \
         || fail "Could not guess parent branch"

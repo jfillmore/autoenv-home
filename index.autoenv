@@ -35,7 +35,7 @@
 0  3d84c77f8f6c75f8ebe43a6698026d172cdf0126  ./bash/scripts/.template
 0  203f89c18066ae2ed02d331120bc601d2332ec7f  ./bash/.bash_profile
 0  75cbe3834e2cf0e6fa94fdd0b0aae313de0f0f01  ./bash/.bashrc.d/jkf.sh
-1  dc0b6d4d08742b3371dfcf4a73b715daf4c11074  ./git-review.sh
+1  a622879ab881fc5e92b993ba3bc3f8089c7e6581  ./git-review.sh
 0  ec0f3e3339fb9becc42e3abdea636b4d5c39be1d  ./README.md
 0  eb25ac705b9a35b8be7dcbb7e8a7ac85bd8a7143  ./.gitignore
 1  1546e848b2d70e80a5a4291d9d7c3a8a347762f4  ./bash-python/virtualenvwrapper.sh

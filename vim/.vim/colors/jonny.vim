@@ -392,7 +392,7 @@ hi Keyword ctermfg=cyan guifg=#55FFFF
 
 " PreProc
 "hi PreProc
-" hi Include
+ hi Include ctermfg=darkcyan guifg=#00AAAA
 " hi Define
 " hi Macro
 " hi PreCondit

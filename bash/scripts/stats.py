@@ -87,7 +87,11 @@ def main(dedupe_col=None, ifs_re=r'\s+', has_headers=False, to_skip='', dedupe_f
     for line in sys.stdin.readlines():
         line = line.strip()
         if ifs_re:
-            line_parts = re.split(ifs_re, line, 0 if not num_cols else num_cols - 1)
+            line_parts = re.split(
+                ifs_re,
+                line,
+                maxsplit=0 if not num_cols else num_cols - 1,
+            )
         else:
             line_parts = [line]
         if grid is None:

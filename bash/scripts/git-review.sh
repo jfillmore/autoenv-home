@@ -5,7 +5,7 @@ SCRIPT_NAME=$(basename "$0")
 
 EDITOR=${EDITOR:-vim}
 EDITOR_ARGS=${EDITOR_ARGS:-}
-GIT_RENAME_THRESHOLD=${GIT_RENAME_THRESHOLD:-25}  # Default to more aggressive detection
+GIT_RENAME_THRESHOLD=${GIT_RENAME_THRESHOLD:-20}  # Default to very aggressive detection
 [ -z "$EDITOR_ARGS" ] && {
     [ "$EDITOR" = "nvim" ] && EDITOR_ARGS="-O"
     [ "$EDITOR" = "vim" ] && EDITOR_ARGS="-O"
@@ -13,6 +13,13 @@ GIT_RENAME_THRESHOLD=${GIT_RENAME_THRESHOLD:-25}  # Default to more aggressive d
 
 
 # DREAM Maybe a way for FILE paths to indicate they are relative to repo, not target?
+
+
+# FIXME:
+
+#$ git-review.sh edit -f src/SMSBrain/src/domain/helpers/append_message.py
+#mktemp: mkstemp failed on /var/folders/pf/38_22v3s5hd2dwy6fj0w0gq80000gn/T/tmp.JnObLBlEAy/: File exists
+#/Users/jkf/scripts/git-review.sh: line 177: : No such file or directory
 
 
 # functions
@@ -185,7 +192,7 @@ _action_edit() {
     local tmp_file="$(mktemp "$tmp_dir/$(basename "$path")")" \
         || fail "Could not create temp file"
     [ -f "$local_path" ] \
-        || rem "File $local_path does not exist. You may need --map or it was recently created in $TARGET_BRANCH" 1
+        || rem "File $local_path does not exist. You may need --map or it was recently created in $TARGET_BRANCH. You may wish to increase GIT_RENAME_THRESHOLD below $GIT_RENAME_THRESHOLD." 1
 
     # We use a subshell to ensure we clean up the temp files and retain the
     # exit status.
@@ -564,5 +571,6 @@ elif [ "$action" = 'edit' ]; then
         _action_edit "$path" "$HEAD_REF"
 
 else
+    usage
     fail "Unknown action: $action"
 fi

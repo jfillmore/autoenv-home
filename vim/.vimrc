@@ -119,13 +119,21 @@ nnoremap <leader>  :%s/ \+$//e<CR>
 
 " --- Macros ---
 " git conflict highlighting
-let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)'
+let @h = '/^\(=======\|<<<<<<<\|>>>>>>>\)'
+'
+" FIXME: if one conflict has 0 lines this breaks
 " git conflict - keep top portion of conflict
 let @t = 'ddnVnxnz.'
 " git conflict - keep bottom portion of conflict
 let @b = 'Vnxnddnz.'
-" python breakpoint
-let @x = 'Oimport pdb; pdb.set_trace()'
+" breakpoints
+" DREAM: define this based on file type to support JS too
+augroup Breakpoint
+  autocmd!
+  autocmd FileType python let @x = 'Oimport pdb; pdb.set_trace()'
+  autocmd FileType javascript let @x = 'Odebugger;'
+augroup END
+
 
 
 " --- Style ---

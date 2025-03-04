@@ -399,7 +399,7 @@ hi Keyword ctermfg=cyan guifg=#55FFFF
 
 " Type
 hi Type ctermfg=darkgreen guifg=#00AA00
-hi StorageClass ctermfg=blue guifg=#0000AA
+hi StorageClass ctermfg=blue guifg=#6666ff
 hi Structure ctermfg=darkcyan guifg=#00AAAA
 hi Typedef ctermfg=magenta guifg=#AA00AA
 

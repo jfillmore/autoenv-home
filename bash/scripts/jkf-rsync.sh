@@ -12,7 +12,7 @@ SCRIPT_NAME=$(basename "$0")
 
 usage() {
     cat <<EOI
-Usage: $SCRIPT_NAME push|pull PATH [HOST] [HOST...] [ARGUMENTS]
+Usage: $SCRIPT_NAME ACTION PATH [HOST] [HOST...] [ARGUMENTS]
 (e.g.)
 
 Sync directory with peers. Avoids syncing out-of-date dirs based on
@@ -22,6 +22,8 @@ first) locally and with each peer, but with home directories normalized.
 Peers are auto-tracked via ".jkf-rsync-peers" files, which are NOT sync'd.
 This file is looked for in parent directories, and if not found will be
 created in PATH specified (which will also require an initial HOST).
+
+ACTIONS: push pull peers diff
 
 
 ARGUMENTS:
@@ -45,7 +47,9 @@ fail() {
 
 # Print a comment
 rem() {
-    [ "$VERBOSE" -eq 1 ] && echo -e "+ [\033[1;37;40m$@\033[0;0m]" >&2
+    local force="${2:-0}"
+    [ "$VERBOSE" -eq 1 -o "$force" -eq 1 ] \
+        && echo -e "+ [\033[1;37;40m$1\033[0;0m]" >&2
 }
 
 # Command runner that can print a quoted version out first
@@ -135,8 +139,13 @@ jkf_peer_file="$full_sync_path/.jkf-known-hosts"
 peer_file=$(find_peer_file "$full_sync_path") || {
     peer_file="$full_sync_path/.jkf-rsync-peers"
 }
-rem "Using peer file '$peer_file' for SSH known hosts"
+[ "$action" = 'peers' ] && {
+    echo "# $peer_file" >&2
+    cat "$peer_file" >&2
+    exit 0
+}
 
+rem "Using peer file '$peer_file' for SSH known hosts"
 ssh_args=(
     ssh
     -l "$JKF_USER"
@@ -157,8 +166,8 @@ rsync_args=(
     --exclude='.sw?'
 )
 [ $VERBOSE -ge 1 ] && rsync_args+=(--verbose --progress)
-[ $DRYRUN -ge 1 ] && rsync_args+=(--dry-run)
-[ $do_prune -eq 1 ] && rsync_args+=(--delete)
+[ $DRYRUN -ge 1 -o "$action" = 'diff' ] && rsync_args+=(--dry-run)
+[ $do_prune -eq 1 -a "$action" != 'diff' ] && rsync_args+=(--delete)
 
 
 # use known hosts by default for our peers
@@ -179,6 +188,28 @@ for host in "${hosts[@]}"; do
         path_args=("$full_sync_path/" "$remote_path")
     elif [ $action = pull ]; then
         path_args=("$remote_path" "$full_sync_path/")
+    elif [ $action = diff ]; then
+        rsync_args+=('--out-format=%i %n %lb (%o) %L')
+        {
+            rem "=== diff push: $host ===" 1
+            path_args=("$full_sync_path/" "$remote_path")
+            rsync \
+                -e "$ssh_args_str" \
+                "${rsync_args[@]}" \
+                "${path_args[@]}" || {
+                    failed+=("$host = $?")
+                }
+            echo
+            rem "=== diff pull: $host ===" 1
+            path_args=("$remote_path" "$full_sync_path/")
+            rsync \
+                -e "$ssh_args_str" \
+                "${rsync_args[@]}" \
+                "${path_args[@]}" || {
+                    failed+=("$host = $?")
+                }
+        } 2>&1 | grep -Ev '^rsync: warning: .*: skipping excluded file$'
+        exit
     else
         fail "invalid action: $action"
     fi

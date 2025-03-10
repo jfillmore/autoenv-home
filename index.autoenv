@@ -29,7 +29,7 @@
 1  7ce0a9c367d9f8d22c88c140d10587a6f9b03315  ./bash/scripts/git-review.sh
 1  f532e2adb1d1283441516e8cb89a44d7f6c025b1  ./bash/scripts/rpass
 1  e6a80d07f3924c89d981b248bf20befa26ab28bf  ./bash/scripts/pdf-combine.sh
-1  91772f623ac006ef9143d33f5a6ee72ed37a75bd  ./bash/scripts/jkf-rsync.sh
+1  234c091f57beaaba10973b702b0e99848559c0f1  ./bash/scripts/jkf-rsync.sh
 1  cb45d8fe8c58c50ba682a182a74f1657b76b247c  ./bash/scripts/stats.py
 1  e20ed41d84bba4473ea3c2d05ff6b47d0569b3d5  ./bash/scripts/stail
 0  3d84c77f8f6c75f8ebe43a6698026d172cdf0126  ./bash/scripts/.template

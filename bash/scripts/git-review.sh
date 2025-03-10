@@ -14,7 +14,6 @@ GIT_RENAME_THRESHOLD=${GIT_RENAME_THRESHOLD:-20}  # Default to very aggressive d
 
 # DREAM Maybe a way for FILE paths to indicate they are relative to repo, not target?
 
-
 # FIXME:
 
 #$ git-review.sh edit -f src/SMSBrain/src/domain/helpers/append_message.py

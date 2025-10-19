@@ -5,6 +5,10 @@
 "   - `ga` auto-formatting does not retain '# " comment leaders
 "
 
+" type ':' and copy'n'paste for higlight group stuff under cursor:
+" let s = synID(line('.'), col('.'), 1) | echo synIDattr(s, 'name') . ' -> ' . synIDattr(synIDtrans(s), 'name')
+
+
 
 " --- Plugins ---
 " https://github.com/junegunn/vim-plug

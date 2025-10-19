@@ -392,14 +392,14 @@ hi Keyword ctermfg=cyan guifg=#55FFFF
 
 " PreProc
 "hi PreProc
- hi Include ctermfg=darkcyan guifg=#00AAAA
+" hi Include
 " hi Define
 " hi Macro
 " hi PreCondit
 
 " Type
 hi Type ctermfg=darkgreen guifg=#00AA00
-hi StorageClass ctermfg=blue guifg=#6666ff
+hi StorageClass ctermfg=lightblue guifg=#5555CC
 hi Structure ctermfg=darkcyan guifg=#00AAAA
 hi Typedef ctermfg=magenta guifg=#AA00AA
 
